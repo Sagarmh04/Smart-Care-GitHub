@@ -22,6 +22,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -45,6 +46,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.smartcare.BottomNavScreen
 import com.example.smartcare.viewModel.ProfileViewModel
 import com.example.smartcare.R
 import com.example.smartcare.ui.theme.black
@@ -68,7 +70,10 @@ fun HomeScreen(
         }
         true-> {
             onSplashComplete()
-            Box(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(top = 5.dp)) {
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(top = 5.dp)) {
             Column {
                 Row(
                     modifier = Modifier
@@ -79,7 +84,7 @@ fun HomeScreen(
                     // Large Button - Reduce width by 20%
                     Box(modifier = Modifier.weight(1.6f)) { // Reduced weight from 2f to 1.6f (-20%)
                         Button(
-                            onClick = {},
+                            onClick = {navController.navigate(BottomNavScreen.Search.route)},
                             modifier = Modifier
                                 .fillMaxWidth() // Expands within Box
                                 .height(50.dp), // Keep height same
@@ -153,7 +158,7 @@ fun HomeScreen(
                     // Separator Line
                     color = Color(0x48000000) // Line color
                 )
-                Box() {
+                Box {
                     val pagerState = rememberPagerState(pageCount = { 2 })
                     val coroutineScope = rememberCoroutineScope()
                     var selectedTab by remember { mutableIntStateOf(0) }
@@ -171,7 +176,7 @@ fun HomeScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(AppTheme.colors.background),
+                                    .background(transparent),
                                 horizontalArrangement = Arrangement.Center
                             ) {
                                 listOf(
@@ -208,8 +213,17 @@ fun HomeScreen(
                                 state = pagerState
                             ) { page ->
                                 when (page) {
-                                    0 -> CompletedAppointments()
-                                    1 -> UpcomingAppointments(profileViewModel)
+                                    0 -> UpcomingAppointments {
+                                        navController.navigate(
+                                            BottomNavScreen.Search.route
+                                        )
+                                    }
+
+                                    1 -> CompletedAppointments {
+                                        navController.navigate(
+                                            BottomNavScreen.Search.route
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -225,35 +239,37 @@ fun HomeScreen(
 }
 
 @Composable
-fun UpcomingAppointments(profileViewModel: ProfileViewModel) {
-    val profile by profileViewModel.profile.observeAsState()
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        profile?.let {
-            Text(text = "Name: ${it.name}", fontSize = 20.sp)
-            Text(text = "Email: ${it.email}", fontSize = 20.sp)
-            Text(text = "Logged In: ${it.isLoggedIn}", fontSize = 20.sp)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(onClick = {
-                // Update name and persist in database
-                profileViewModel.insertOrUpdateProfile(it.copy(name = "Updated Name"))
-            }) {
-                Text(text = "Update Name")
+fun CompletedAppointments(onAddClick: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize(),contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "No Completed Appointments",
+                style = AppTheme.typography.heading.copy(fontSize = 18.sp)
+            )
+            Row(modifier = Modifier.clickable { onAddClick() },verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Add appointments",
+                    style = AppTheme.typography.heading.copy(fontSize = 12.sp)
+                )
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
             }
-        } ?: Text(text = "No profile found!", fontSize = 20.sp)
+        }
     }
 }
 
 @Composable
-fun CompletedAppointments() {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()){
-        Text("Hello")
+fun UpcomingAppointments(onAddClick: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize(),contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center) {
+            Text(text = "No Upcoming Appointments", style = AppTheme.typography.heading.copy(fontSize = 18.sp))
+            Row(modifier = Modifier.clickable { onAddClick() },verticalAlignment = Alignment.CenterVertically){
+                Text(text = "Add appointments", style = AppTheme.typography.heading.copy(fontSize = 12.sp))
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
+            }
+        }
     }
 }

@@ -63,7 +63,7 @@ fun ProfileScreen(
     onSettings: () -> Unit
 ) {
     val profile by profileViewModel.profile.observeAsState()
-    val gradientColors = listOf(Color(0xFF6366F1), Color(0xFFA855F7), Color(0xFFEC4899))
+    val gradientColors = listOf(Color(0xFF7F81F1), Color(0xFFB473F3), Color(0xFFD467EC))
     val accentColor = Color(0xFF6366F1)
 
     Box(modifier = Modifier
