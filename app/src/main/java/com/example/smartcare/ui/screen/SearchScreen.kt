@@ -29,24 +29,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.LocalHospital
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -70,12 +64,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.smartcare.City.City
 import com.example.smartcare.City.parsedCities
 import com.example.smartcare.Hospitals.Hospital
+import com.example.smartcare.Hospitals.allHospitalData
 import com.example.smartcare.ui.theme.white
 import com.example.smartcare.viewModel.SearchViewModel
 import kotlinx.coroutines.delay
@@ -97,10 +91,11 @@ fun SearchScreen(
     var isSearchFocused by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val selectedCity by viewModel.selectedCity.observeAsState()
-    val hospitalQuery by viewModel.hospitalSearchQuery.observeAsState("")
-    val filteredHospitals by viewModel.filteredHospitals.observeAsState(emptyList())
+    var hospitalQuery by remember { mutableStateOf("") }
     var isSearchActive by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
+    var onShow by remember { mutableStateOf(false) }
+    var filteredHospitals : List<Hospital> = allHospitalData.find { it.cityName.equals(selectedCity?.name) }?.hospitals?: emptyList()
     fun hideKeyboard(context: Context) {
         val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0)
@@ -167,18 +162,27 @@ fun SearchScreen(
                     }
                 )
             } else {
-                Box(modifier = Modifier.zIndex(1f).padding(horizontal = 16.dp)) {
-                    HospitalSearchField(
-                        query = hospitalQuery,
-                        onQueryChange = { viewModel.setHospitalSearchQuery(it) },
-                        onFocusChange = { isSearchActive = it },
-                        focusRequester = focusRequester,
-                        modifier = Modifier.padding(16.dp)
-                    )
+                Column {
+                        HospitalSearchField(
+                            query = hospitalQuery,
+                            onQueryChange = {
+                                viewModel.updateHospitalSearchQuery(it)
+                                hospitalQuery=it
+                                isSearchActive=true
+                                            },
+                            onFocusChange = { isSearchActive = it },
+                            focusRequester = focusRequester,
+                            modifier = Modifier.padding(16.dp),
+                            onBack = {
+                                onShow=false
+                                isSearchActive = false
+                                searchQuery = ""
+                            }
+                        )
                     // Dropdown List
                     if (isSearchActive) {
                         HospitalDropdown(
-                            hospitals = filteredHospitals,
+                            filteredHospitals,
                             onHospitalSelect = { hospital ->
                                 navController.navigate("hospitalDetails/${hospital.id}")
                                 isSearchActive = false
@@ -186,18 +190,13 @@ fun SearchScreen(
                             },
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clickable {
-                                    isSearchActive = false
-                                    hideKeyboard(context)
-                                }
-                                .background(Color.Black.copy(alpha = 0.4f))
-                        )
                     } else {
                         // Original content wrapped in scroll
-                        MainContentSection(filteredHospitals, navController, viewModel)
+                        MainContentSection(
+                            filteredHospitals,
+                            navController,
+                            viewModel,
+                            selectedCity)
                     }
                 }
 
@@ -245,13 +244,15 @@ private fun EmptyState(message: String) {
 fun MainContentSection(
     filteredHospitals: List<Hospital>,
     navController: NavController,
-    viewModel: SearchViewModel
+    viewModel: SearchViewModel,
+    selectedCity: City?
 ) {
     val selectedCity by viewModel.selectedCity.observeAsState()
     val hospitalQuery by viewModel.hospitalSearchQuery.observeAsState("")
-    val filteredHospitals by viewModel.filteredHospitals.observeAsState(emptyList())
     var showFilters by remember { mutableStateOf(false) }
-    Column(modifier = Modifier.verticalScroll(rememberScrollState()).fillMaxSize()) {
+    Column(modifier = Modifier
+        .verticalScroll(rememberScrollState())
+        .fillMaxSize()) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -300,7 +301,8 @@ private fun HospitalList(
     if (hospitals.isEmpty()) {
         EmptyState(message = "No hospitals found matching your criteria")
     } else {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(modifier = Modifier.fillMaxWidth()
+            .heightIn(max = 400.dp)) {
             items(hospitals) { hospital ->
                 HospitalItem(hospital, onHospitalClick)
             }
@@ -314,38 +316,71 @@ private fun HospitalSearchField(
     onQueryChange: (String) -> Unit,
     onFocusChange: (Boolean) -> Unit,
     focusRequester: FocusRequester,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit
 ) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
-        modifier = modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequester)
-            .onFocusChanged { state ->
-                onFocusChange(state.isFocused)
-            },
-        placeholder = { Text("Search hospitals...") },
-        leadingIcon = { Icon(Icons.Default.Search, null) },
-        trailingIcon = {
-            if (query.isNotEmpty()) {
-                IconButton(onClick = {
-                    onQueryChange("")
-                    focusRequester.requestFocus()
-                }) {
-                    Icon(Icons.Default.Close, "Clear")
-                }
-            }
-        },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surface,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        ),
-        shape = RoundedCornerShape(16.dp),
-        singleLine = true
-    )
+    var debouncedQuery by remember { mutableStateOf(query) }
+    val keyboardController = LocalSoftwareKeyboardController.current // Add this
+
+    // Debounce implementation
+    LaunchedEffect(query) {
+        delay(300)
+        debouncedQuery = query
+    }
+    Column {
+        // Search Bar
+        Box(modifier = Modifier.padding(bottom =  16.dp, start = 16.dp, end = 16.dp)) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(elevation = 4.dp, shape = RoundedCornerShape(16.dp))
+                    .focusRequester(focusRequester)
+                    .onFocusChanged { state ->  //observe TODO oooooooooooooooo
+                        onFocusChange(state.isFocused)
+                    },
+                placeholder = {
+                    Text("Search hospitals...",
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                              },
+                leadingIcon = {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary)
+                },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = {
+                            onQueryChange("")
+                            focusRequester.requestFocus()
+                        }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Clear")
+                        }
+                    }else{
+                        IconButton(onClick = {
+                            onBack()
+                            keyboardController?.hide() // Hide keyboard when exiting
+                        }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                },
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                ),
+                shape = RoundedCornerShape(16.dp),
+                singleLine = true
+            )
+        }
+    }
 }
 
 @Composable
@@ -359,7 +394,8 @@ private fun HospitalPreviewItem(hospital: Hospital) {
                 .size(80.dp)
                 .background(
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(12.dp))
+                    shape = RoundedCornerShape(12.dp)
+                )
         ) {
             Icon(
                 imageVector = Icons.Default.LocalHospital,
@@ -391,7 +427,7 @@ private fun HospitalPreviewItem(hospital: Hospital) {
 
 @Composable
 private fun HospitalDropdown(
-    hospitals: List<Hospital>,
+    filteredHospitals: List<Hospital>,
     onHospitalSelect: (Hospital) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -410,11 +446,12 @@ private fun HospitalDropdown(
                 .fillMaxWidth()
                 .heightIn(max = 400.dp)
         ) {
-            items(hospitals) { hospital ->
+            items(filteredHospitals) { hospital ->
                 HospitalDropdownItem(hospital, onHospitalSelect)
             }
 
-            if (hospitals.isEmpty()) {
+
+        if (filteredHospitals.isEmpty()) {
                 item {
                     Text(
                         text = "No matching hospitals found",
@@ -536,7 +573,8 @@ private fun LocationSearchSection(
         }
 
         // Filtered Cities List
-        LazyColumn(modifier = Modifier.fillMaxHeight()) {
+        LazyColumn(modifier = Modifier.fillMaxWidth()
+            .heightIn(max = 400.dp)) {
             items(
                 items = allCities.filter {
                     it.name.contains(debouncedQuery, ignoreCase = true) ||
@@ -552,7 +590,6 @@ private fun LocationSearchSection(
         }
     }
 }
-
 @Composable
 private fun CityListItem(city: City, onSelect: () -> Unit) {
     Card(
@@ -578,3 +615,5 @@ private fun CityListItem(city: City, onSelect: () -> Unit) {
         }
     }
 }
+
+

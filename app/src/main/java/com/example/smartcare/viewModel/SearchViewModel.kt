@@ -9,14 +9,11 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.liveData
 import com.example.smartcare.City.City
 import com.example.smartcare.City.parsedCities
-import com.example.smartcare.Hospitals.Hospital
-import com.example.smartcare.Hospitals.HospitalData
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
+import com.example.smartcare.Hospitals.HospitalsData
+import com.example.smartcare.Hospitals.allHospitalData
 
 class SearchViewModel : ViewModel() {
     // Selected City
@@ -35,34 +32,16 @@ class SearchViewModel : ViewModel() {
     private val _selectedSpecialties = MutableLiveData<Set<String>>(emptySet())
     private val _minRating = MutableLiveData(0f)
 
-    val filteredHospitals: LiveData<List<Hospital>> = liveData {
-        combine(
-            _selectedCity.asFlow(),
-            _hospitalSearchQuery.asFlow() // Removed debounce
-        ) { city, query ->
-            filterHospitals(city, query)
-        }.collect { hospitals ->
-            emit(hospitals)
-        }
-    }
-
-    private fun filterHospitals(
-        city: City?,
-        query: String,
-        specialties: Set<String>,
-        minRating: Float
-    ): List<Hospital> {
-        return HospitalData.hospitals.filter { hospital ->
-            (city == null || hospital.cityId == city.id) &&
-                    (query.isEmpty() || hospital.name.contains(query, true)) &&
-                    (specialties.isEmpty() || specialties.any { it in hospital.specialties }) &&
-                    hospital.rating >= minRating
-        }
-    }
 
     // Add filter update functions
     fun updateSpecialtyFilters(specialties: Set<String>) {
         _selectedSpecialties.value = specialties
+    }
+
+    fun getHospitalById(hospitalId: String?): LiveData<HospitalsData?> {
+        return liveData {
+            emit(allHospitalData.find { it.hospitals.get(1).id == hospitalId })
+        }
     }
 
     fun updateRatingFilter(rating: Float) {
@@ -86,14 +65,11 @@ class SearchViewModel : ViewModel() {
         _allCities.value = parsedCities // Ensure parsedCities is defined elsewhere
     }
 
-    private fun filterHospitals(city: City?, query: String): List<Hospital> {
-        return HospitalData.hospitals.filter { hospital ->
-            (city == null || hospital.cityId == city.id) &&
-                    (query.isEmpty() || hospital.name.contains(query, true))
-        }
-    }
 
     fun updateSearchQuery(query: String) {
+        citySearchQuery = query
+    }
+    fun updateHospitalSearchQuery(query: String) {
         citySearchQuery = query
     }
 

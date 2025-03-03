@@ -38,9 +38,8 @@ fun BottomNavigationBar(navController: NavHostController, modifier: Modifier = M
     ) {
         screens.forEach { screen ->
             var currentRoute by remember {  mutableStateOf( BottomNavScreen.Home.route)}
-            val isSelected = navController.currentBackStackEntry?.destination?.route == screen.route
             BottomNavigationItem(
-                selected = isSelected,
+                selected = true,
                 onClick = {
                     if (navController.currentDestination?.route != screen.route) {
                         navController.navigate(screen.route) {
@@ -64,7 +63,7 @@ fun BottomNavigationBar(navController: NavHostController, modifier: Modifier = M
                         text = screen.title,
                         style = AppTheme.typography.body.copy(fontSize = 16.sp, fontWeight = FontWeight.Thin)
                         )
-                Spacer(Modifier.height(30.dp))
+                Spacer(Modifier.height(40.dp))
                 }
             )
         }
