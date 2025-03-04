@@ -1,5 +1,6 @@
 package com.example.smartcare.ui.screen
 
+import AppTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,8 +31,10 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,8 +48,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.smartcare.Hospitals.Hospital
@@ -70,17 +77,19 @@ fun HospitalDetailsScreen(
             )
         }
     ) { padding ->
-        if (hospital == null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Center
-            ) {
-                Text("Hospital not found", color = MaterialTheme.colorScheme.error)
+        Box(modifier = Modifier.padding(start = 12.dp)) {
+            if (hospital == null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Center
+                ) {
+                    Text("Hospital not found", color = MaterialTheme.colorScheme.error)
+                }
+            } else {
+                HospitalDetailsContent(hospital!!, Modifier.padding(padding))
             }
-        } else {
-            HospitalDetailsContent(hospital!!, Modifier.padding(padding))
         }
     }
 }
@@ -116,10 +125,10 @@ private fun HospitalDetailsContent(hospital: Hospital, modifier: Modifier = Modi
 @Composable
 private fun HospitalHeader(hospital: Hospital) {
     Box(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier) {
             Text(
                 text = hospital.name,
-                style = MaterialTheme.typography.headlineMedium,
+                style = AppTheme.typography.heading.copy(fontSize = 24.sp, letterSpacing = 1.sp),
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
@@ -134,7 +143,7 @@ private fun HospitalHeader(hospital: Hospital) {
 
 @Composable
 private fun RatingBar(rating: Float, modifier: Modifier = Modifier) {
-    Row(modifier = modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row( verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = "%.1f".format(rating),
             style = MaterialTheme.typography.titleLarge,
@@ -152,17 +161,87 @@ private fun RatingBar(rating: Float, modifier: Modifier = Modifier) {
 }
 @Composable
 private fun HospitalKeyInfo(hospital: Hospital) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-        InfoRow(Icons.Default.LocationOn, "${hospital.distance} km away")
-        InfoRow(Icons.Default.Schedule, "Open until ${hospital.openingHours}")
-        InfoRow(Icons.Default.People, "${hospital.reviewCount} reviews")
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            InfoItem(
+                icon = Icons.Default.LocationOn,
+                value = "${hospital.distance} km",
+                label = "Distance",
+                iconTint = MaterialTheme.colorScheme.primary
+            )
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+
+            InfoItem(
+                icon = Icons.Default.Schedule,
+                value = "Open until ${hospital.openingHours}",
+                label = "Closing time",
+                iconTint = MaterialTheme.colorScheme.tertiary
+            )
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+
+            InfoItem(
+                icon = Icons.Default.People,
+                value = hospital.reviewCount.toString(),
+                label = "Reviews",
+                iconTint = MaterialTheme.colorScheme.secondary
+            )
+        }
+    }
+}
+
+@Composable
+private fun InfoItem(icon: ImageVector, value: String, label: String, iconTint: Color) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(20.dp)
+            )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                        text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+            )
+        }
+
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 
 @Composable
 private fun InfoRow(icon: ImageVector, text: String) {
     Row(
-        modifier = Modifier.padding(horizontal = 16.dp),
+        modifier = Modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -178,7 +257,7 @@ private fun InfoRow(icon: ImageVector, text: String) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun HospitalSpecialties(hospital: Hospital) {
-    Column (modifier = Modifier.padding(horizontal = 16.dp)){
+    Column (modifier = Modifier){
         Text(
             text = "Specialties",
             style = MaterialTheme.typography.titleLarge,
@@ -200,7 +279,7 @@ private fun HospitalSpecialties(hospital: Hospital) {
 
 @Composable
 private fun HospitalContactSection(hospital: Hospital) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+    Column(modifier = Modifier) {
         Text(
             text = "Contact Information",
             style = MaterialTheme.typography.titleLarge,
