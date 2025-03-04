@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt") // Using KAPT for both Room and Hilt
+    id ("kotlin-parcelize")
 }
 
 android {

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -183,12 +182,15 @@ fun SearchScreen(
                     if (isSearchActive) {
                         HospitalDropdown(
                             filteredHospitals,
+                            hospitalQuery,
                             onHospitalSelect = { hospital ->
-                                navController.navigate("hospitalDetails/${hospital.id}")
+                                navController.currentBackStackEntry?.savedStateHandle?.set(key = "hospital",hospital)
+                                navController.navigate("hospitalDetails")
                                 isSearchActive = false
                                 hideKeyboard(context)
                             },
-                            modifier = Modifier.padding(horizontal = 16.dp)
+                            modifier = Modifier.padding(horizontal = 16.dp),
+
                         )
                     } else {
                         // Original content wrapped in scroll
@@ -281,15 +283,10 @@ fun MainContentSection(
         HospitalList(
             hospitals = filteredHospitals,
             onHospitalClick = { hospital ->
-                navController.navigate("hospitalDetails/${hospital.id}")
+                navController.currentBackStackEntry?.savedStateHandle?.set("hospital",hospital)
+                navController.navigate("hospitalDetails")
             }
         )
-//        HospitalListSection(
-//            hospitals = filteredHospitals,
-//            onHospitalClick = { hospital ->
-//                navController.navigate("hospitalDetails/${hospital.id}")
-//            }
-//        )
     }
 }
 
@@ -428,6 +425,7 @@ private fun HospitalPreviewItem(hospital: Hospital) {
 @Composable
 private fun HospitalDropdown(
     filteredHospitals: List<Hospital>,
+    searchQuery: String,
     onHospitalSelect: (Hospital) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -446,7 +444,7 @@ private fun HospitalDropdown(
                 .fillMaxWidth()
                 .heightIn(max = 400.dp)
         ) {
-            items(filteredHospitals) { hospital ->
+            items(items =  filteredHospitals.filter { it.name.contains(searchQuery, ignoreCase = true) }) { hospital ->
                 HospitalDropdownItem(hospital, onHospitalSelect)
             }
 

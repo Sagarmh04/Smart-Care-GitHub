@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.smartcare.ui.screen.HomeScreen
+import com.example.smartcare.ui.screen.HospitalDetailsScreen
 import com.example.smartcare.ui.screen.LoginScreen
 import com.example.smartcare.ui.screen.ProfileScreen
 import com.example.smartcare.ui.screen.RecordScreen
@@ -97,11 +98,9 @@ fun NavigateScreens(
         }
         // Add to your navigation graph
         composable(
-            route = "hospitalDetails/{hospitalId}",
-            arguments = listOf(navArgument("hospitalId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val hospitalId = backStackEntry.arguments?.getString("hospitalId")
-//            HospitalDetailsScreen(hospitalId = hospitalId)
+            route = "hospitalDetails"
+        ) {
+            HospitalDetailsScreen(navController)
         }
         composable(
             BottomNavScreen.Records.route,

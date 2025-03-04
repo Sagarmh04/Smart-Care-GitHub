@@ -1,5 +1,9 @@
 package com.example.smartcare.Hospitals
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Hospital(
     var id: String,
     var name: String,
@@ -11,4 +15,4 @@ data class Hospital(
     var reviewCount: String,
     var openingHours: String,
     // Other fields
-)
+) : Parcelable

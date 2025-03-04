@@ -54,11 +54,9 @@ import com.example.smartcare.viewModel.SearchViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HospitalDetailsScreen(
-    hospitalId: String?,
     navController: NavController,
 ) {
-    val viewModel= viewModel<SearchViewModel>()
-    val hospital by viewModel.getHospitalById(hospitalId).observeAsState()
+    val hospital = navController.previousBackStackEntry?.savedStateHandle?.get<Hospital>("hospital")
 
     Scaffold(
         topBar = {
@@ -82,7 +80,7 @@ fun HospitalDetailsScreen(
                 Text("Hospital not found", color = MaterialTheme.colorScheme.error)
             }
         } else {
-//            HospitalDetailsContent(hospital!!, Modifier.padding(padding))
+            HospitalDetailsContent(hospital!!, Modifier.padding(padding))
         }
     }
 }
@@ -117,10 +115,7 @@ private fun HospitalDetailsContent(hospital: Hospital, modifier: Modifier = Modi
 
 @Composable
 private fun HospitalHeader(hospital: Hospital) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = hospital.name,
@@ -139,7 +134,7 @@ private fun HospitalHeader(hospital: Hospital) {
 
 @Composable
 private fun RatingBar(rating: Float, modifier: Modifier = Modifier) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = "%.1f".format(rating),
             style = MaterialTheme.typography.titleLarge,
@@ -157,7 +152,7 @@ private fun RatingBar(rating: Float, modifier: Modifier = Modifier) {
 }
 @Composable
 private fun HospitalKeyInfo(hospital: Hospital) {
-    Column {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         InfoRow(Icons.Default.LocationOn, "${hospital.distance} km away")
         InfoRow(Icons.Default.Schedule, "Open until ${hospital.openingHours}")
         InfoRow(Icons.Default.People, "${hospital.reviewCount} reviews")
@@ -167,7 +162,7 @@ private fun HospitalKeyInfo(hospital: Hospital) {
 @Composable
 private fun InfoRow(icon: ImageVector, text: String) {
     Row(
-        modifier = Modifier.padding(vertical = 8.dp),
+        modifier = Modifier.padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -183,7 +178,7 @@ private fun InfoRow(icon: ImageVector, text: String) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun HospitalSpecialties(hospital: Hospital) {
-    Column {
+    Column (modifier = Modifier.padding(horizontal = 16.dp)){
         Text(
             text = "Specialties",
             style = MaterialTheme.typography.titleLarge,
@@ -205,7 +200,7 @@ private fun HospitalSpecialties(hospital: Hospital) {
 
 @Composable
 private fun HospitalContactSection(hospital: Hospital) {
-    Column {
+    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
         Text(
             text = "Contact Information",
             style = MaterialTheme.typography.titleLarge,
@@ -217,16 +212,6 @@ private fun HospitalContactSection(hospital: Hospital) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Simple Map Preview (Placeholder)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .clip(RoundedCornerShape(8.dp)),
-            contentAlignment = Center
-        ) {
-            Text("Map Preview", color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+
     }
 }
