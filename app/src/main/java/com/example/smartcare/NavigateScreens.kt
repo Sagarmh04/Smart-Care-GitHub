@@ -10,10 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
+import com.example.smartcare.ui.screen.AppointmentBookingScreen
 import com.example.smartcare.ui.screen.HomeScreen
 import com.example.smartcare.ui.screen.HospitalDetailsScreen
 import com.example.smartcare.ui.screen.LoginScreen
@@ -36,6 +35,7 @@ fun NavigateScreens(
     onSplashComplete: () -> Unit,
     medicalViewModel: MedicalRecordViewModel,
     appointmentViewModel: AppointmentViewModel,
+    hideBottomScreen: () -> Unit,
 ) {
     NavHost(navController, startDestination = OtherScreens.SplashScreen.route) {
         composable(
@@ -50,7 +50,8 @@ fun NavigateScreens(
             enterTransition = { fadeIn(animationSpec = tween(50)) },
             exitTransition = { fadeOut(animationSpec = tween(0)) }
         ) {
-            HomeScreen(innerPadding, navController, profileViewModel, onSplashComplete
+            HomeScreen(innerPadding, navController, profileViewModel, onSplashComplete,
+                appointmentViewModel
             )
         }
         composable(
@@ -90,17 +91,34 @@ fun NavigateScreens(
             )
         }
         composable(
+            route = OtherScreens.bookingScreen.route
+        ){
+            AppointmentBookingScreen(
+                navController = navController,
+                appointmentViewModel = appointmentViewModel,
+                hideBottomScreen,
+                modifier = Modifier.padding(innerPadding)
+                )
+        }
+        composable(
             BottomNavScreen.Search.route,
             enterTransition = { fadeIn(animationSpec = tween(50)) },
             exitTransition = { fadeOut(animationSpec = tween(0)) }
         ) {
-            SearchScreen(modifier = Modifier.padding(innerPadding), onBack = {}, navController = navController)
+            SearchScreen(
+                modifier = Modifier.padding(innerPadding),
+                onBack = {},
+                navController = navController,
+                hideBottomScreen = onSplashComplete
+            )
         }
         // Add to your navigation graph
         composable(
             route = "hospitalDetails"
         ) {
-            HospitalDetailsScreen(navController)
+            HospitalDetailsScreen(
+                navController,
+                hideBottomScreen = hideBottomScreen)
         }
         composable(
             BottomNavScreen.Records.route,

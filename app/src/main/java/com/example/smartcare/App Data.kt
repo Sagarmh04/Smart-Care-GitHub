@@ -67,7 +67,11 @@ data class AppointmentLists(
     val time: String,
     val reason: String,
     val status: String,
-    val isCompleted: Boolean = false
+    val isCompleted: Boolean = false,
+    val hospitalDataIndex: Int,
+    val hospitalIndex:Int,
+    val doctorIndex:Int,
+    val appointmentIndex:Int
 )
 
 @Entity

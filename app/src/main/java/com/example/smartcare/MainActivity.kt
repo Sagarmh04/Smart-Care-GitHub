@@ -97,8 +97,9 @@ class MainActivity : ComponentActivity() {
                             navController,
                             profile, profileViewModel,
                             onSplashComplete = { showBottomBar = true },
-                            medicalViewModel,
-                            appointmentViewModel
+                            hideBottomScreen = { showBottomBar = false },
+                            medicalViewModel = medicalViewModel,
+                            appointmentViewModel =appointmentViewModel,
                         )
                     }
                 }

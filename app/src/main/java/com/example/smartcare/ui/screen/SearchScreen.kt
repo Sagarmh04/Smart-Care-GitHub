@@ -79,15 +79,16 @@ import kotlinx.coroutines.delay
 fun SearchScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    hideBottomScreen: () -> Unit
 ) {
+    LaunchedEffect(hideBottomScreen) {
+        hideBottomScreen()
+    }
     val viewModel = viewModel<SearchViewModel>()
-    val allCities by viewModel.allCities.observeAsState()
     // State management
     var isSearchingLocation by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
-    var isSearchFocused by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val selectedCity by viewModel.selectedCity.observeAsState()
     var hospitalQuery by remember { mutableStateOf("") }
@@ -184,6 +185,10 @@ fun SearchScreen(
                             filteredHospitals,
                             hospitalQuery,
                             onHospitalSelect = { hospital ->
+                                val name = selectedCity?.name
+                                navController.currentBackStackEntry?.savedStateHandle?.set("city",
+                                    name
+                                )
                                 navController.currentBackStackEntry?.savedStateHandle?.set(key = "hospital",hospital)
                                 navController.navigate("hospitalDetails")
                                 isSearchActive = false
@@ -283,6 +288,10 @@ fun MainContentSection(
         HospitalList(
             hospitals = filteredHospitals,
             onHospitalClick = { hospital ->
+                val name = selectedCity?.name
+                navController.currentBackStackEntry?.savedStateHandle?.set("city",
+                    name
+                )
                 navController.currentBackStackEntry?.savedStateHandle?.set("hospital",hospital)
                 navController.navigate("hospitalDetails")
             }
