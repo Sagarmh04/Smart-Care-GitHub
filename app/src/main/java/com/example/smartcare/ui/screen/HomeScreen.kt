@@ -85,7 +85,7 @@ fun HomeScreen(
             ) {
                 // Clickable Image
                 Image(
-                    painter = painterResource(R.drawable.img), // Replace with actual image
+                    painter = painterResource(R.drawable.img_1), // Replace with actual image
                     contentDescription = "Ride Option Icon",
                     modifier = Modifier
                         .size(170.dp)  // Adjust image size
