@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
@@ -30,12 +32,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -62,162 +66,35 @@ fun HomeScreen(
     profileViewModel: ProfileViewModel,
     onSplashComplete: () -> Unit,
 ) {
-//    LaunchedEffect(Unit) {
-//        val auth = FirebaseAuth.getInstance()
-//        val user = auth.currentUser
-//        Log.d("FirestoreDebug", "Firebase Auth UID: ${user?.uid}")
-//
-//        if (user != null) {
-//            fetchAppointmentsAndStore(
-//                userId = user.uid,
-//                onFailure = { e -> Log.e("FirestoreDebug", "Failed to fetch appointments", e) }
-//            )
-//        }
-//        onSplashComplete()
-//    }
 
         val isLoggedIn = profileViewModel.isLoggedIn.observeAsState(initial = null)
+    val scrollState = rememberScrollState()
+    var searchQuery by remember { mutableStateOf("") }
         when(isLoggedIn.value) {
             false-> Column(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator()
                 Text("Loading...")
             }
             true-> {
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(top = 5.dp)) {
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 10.dp), // Adds space at left & right end
-                            horizontalArrangement = Arrangement.SpaceEvenly // Equal spacing everywhere
-                        ) {
-                            // Large Button - Reduce width by 20%
-                            Box(modifier = Modifier.weight(1.6f)) { // Reduced weight from 2f to 1.6f (-20%)
-                                Button(
-                                    onClick = {navController.navigate(BottomNavScreen.Search.route)},
-                                    modifier = Modifier
-                                        .fillMaxWidth() // Expands within Box
-                                        .height(50.dp), // Keep height same
-                                    colors = ButtonColors(
-                                        containerColor = skin,
-                                        contentColor = black,
-                                        disabledContainerColor = skin,
-                                        disabledContentColor = black
-                                    ),
-                                    shape = RoundedCornerShape(10.dp)
-                                ) {
-                                    Row(
-                                        Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.Start
-                                    ) {
-                                        Text("Search", style = AppTheme.typography.heading)
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Icon(Icons.Default.Search, contentDescription = "Search")
-                                    }
-                                }
-                            }
-                            Spacer(Modifier.width(10.dp))
-                            // Small Buttons - Keep size equal
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(10.dp), // Adds spacing between buttons
-                            ) {
-                                Button(
-                                    onClick = {},
-                                    modifier = Modifier
-                                        .size(50.dp), // Ensures the button is square
-                                    contentPadding = PaddingValues(0.dp), // Removes default button padding
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = skin,
-                                        contentColor = black
-                                    ),
-                                    shape = RoundedCornerShape(10.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Notifications,
-                                        contentDescription = "Home",
-                                        modifier = Modifier.size(30.dp) // Ensures proper icon size
-                                    )
-                                }
-
-                            }
-
-
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(top = 5.dp)
+                ) {
+                    LazyColumn {
+                        item {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth() // Optional: Make it take full width
+                            )
                         }
-                        HorizontalDivider(
-                            modifier = Modifier.padding(vertical = 15.dp), // Space around the divider
-                            thickness = 2.dp, // Line thickness
-                            // Separator Line
-                            color = Color(0x48000000) // Line color
-                        )
-                        Box {
-                            val pagerState = rememberPagerState(pageCount = { 2 })
-                            val coroutineScope = rememberCoroutineScope()
-                            var selectedTab by remember { mutableIntStateOf(0) }
-                            val SelectedColor = skin
-                            val BaseColor = white
-                            Box(modifier = Modifier.fillMaxSize()) {
-                                // Observe pager state changes
-                                LaunchedEffect(pagerState.currentPage) {
-                                    selectedTab = pagerState.currentPage
-                                }
-
-
-
-                                Column {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(transparent),
-                                        horizontalArrangement = Arrangement.Center
-                                    ) {
-                                        listOf(
-                                            "Upcoming" to 0,
-                                            "Completed" to 1
-                                        ).forEach { (title, index) ->
-                                            Box(
-                                                modifier = Modifier
-                                                    .border(
-                                                        1.dp,
-                                                        if (selectedTab == index) black else transparent,
-                                                        RoundedCornerShape(50.dp)
-                                                    )
-                                                    .clip(RoundedCornerShape(50.dp))
-                                                    .background(if (selectedTab == index) SelectedColor else BaseColor)
-                                                    .clickable(
-                                                        interactionSource = remember { MutableInteractionSource() },
-                                                        indication = null // Disables Ripple Effect
-                                                    ) {
-                                                        coroutineScope.launch {
-                                                            pagerState.animateScrollToPage(index)
-                                                            selectedTab = index
-                                                        }
-                                                    }
-                                                    .padding(vertical = 12.dp, horizontal = 24.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(text = title, color = AppTheme.colors.primary)
-                                            }
-                                        }
-                                    }
-
-                                    HorizontalPager(
-                                        state = pagerState
-                                    ) { page ->
-                                        when (page) {
-                                            0 -> PendingAppointmentsScreen()
-
-                                            1 -> CompletedAppointmentsScreen()
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        // add elements inside item only , or chatgpt maadri
                     }
                 }
+
             }
             null-> Box(modifier = Modifier.fillMaxSize()) {
                 Text("Loading...")

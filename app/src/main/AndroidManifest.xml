@@ -9,7 +9,7 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:label="Smart Care"
+        android:label="Campus Cruise"
         android:supportsRtl="true"
         android:theme="@style/Theme.SmartCare"
         tools:targetApi="31">
