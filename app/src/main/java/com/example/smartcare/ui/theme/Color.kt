@@ -3,6 +3,31 @@ package com.example.smartcare.ui.theme
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Light Theme Colors
 val md_theme_light_primary = Color(0xFF006C51)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
