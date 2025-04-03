@@ -34,7 +34,6 @@ fun HomeScreen(
     innerPadding: PaddingValues
 ) {
     val pagerState = rememberPagerState(pageCount = { 2 })
-    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
