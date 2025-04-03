@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
 
 
             SmartCareTheme {
-                val profile by profileViewModel.profile.collectAsState(
+                val profile by profileViewModel.profile.collectAsState(initial =
                     ProfileData(
                         idOne = 1,
                         id = "TODO",
@@ -86,7 +86,7 @@ class MainActivity : ComponentActivity() {
                         isLoggedIn = false
                     )
                 )
-                val isLoggedIn = profileViewModel.isLoggedIn.collectAsState(initial = false).value
+                val isLoggedIn = profileViewModel.isLoggedIn.collectAsState(initial = false)
                 LaunchedEffect(Unit) {
                     profileViewModel.ensureProfileExists()
                 }
@@ -98,7 +98,7 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         bottomBar = {
-                            if(isLoggedIn &&showBottomBar)
+                            if(isLoggedIn.value &&showBottomBar)
                                 BottomNavigationBar(navController)
                         } // ✅ Bottom bar inside Scaffold
                     ) { innerPadding ->

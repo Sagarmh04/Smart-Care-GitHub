@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,12 +23,12 @@ import kotlinx.coroutines.delay
 fun SplashScreen(
     navController: NavController,
     profileViewModel: ProfileViewModel,
-    isLoggedIn: Boolean
+    isLoggedIn: State<Boolean>
 ) {
 
     LaunchedEffect(Unit) {
         delay(2000) // Simulate splash duration
-        if (!isLoggedIn) {
+        if (!isLoggedIn.value) {
             navController.navigate("login") {
                 popUpTo("splash") { inclusive = true } // Prevent going back to splash
             }

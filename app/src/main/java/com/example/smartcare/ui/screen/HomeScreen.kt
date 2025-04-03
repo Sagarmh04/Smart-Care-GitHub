@@ -1,6 +1,5 @@
 package com.example.smartcare.ui.screen
 
-import android.R
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.smartcare.OtherScreens
+import com.example.smartcare.R
 import com.example.smartcare.ui.theme.white
 import com.example.smartcare.database.viewModel.ProfileViewModel
 
@@ -85,7 +85,7 @@ fun HomeScreen(
             ) {
                 // Clickable Image
                 Image(
-                    painter = painterResource(id = R.drawable), // Replace with actual image
+                    painter = painterResource(R.drawable.img), // Replace with actual image
                     contentDescription = "Ride Option Icon",
                     modifier = Modifier
                         .size(170.dp)  // Adjust image size
@@ -144,7 +144,7 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                painter = painterResource(id = R.drawable.ic_menu_compass), // Replace with your app logo
+                                painter = painterResource(id = R.drawable.splash_screen), // Replace with your app logo
                                 contentDescription = "App Logo",
                                 tint = Color.White,
                                 modifier = Modifier.size(32.dp)
@@ -271,7 +271,7 @@ fun RideCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.ic_menu_mylocation), // Replace with profile image
+                painter = painterResource(id = R.drawable.default_profile_screen), // Replace with profile image
                 contentDescription = "Driver Image",
                 tint = color,
                 modifier = Modifier.size(40.dp)

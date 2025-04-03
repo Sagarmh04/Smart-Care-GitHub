@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -35,7 +36,7 @@ fun NavigateScreens(
     profile: ProfileData?,
     profileViewModel: ProfileViewModel,
     messageViewModel: MessageViewModel,
-    isLoggedIn: Boolean,
+    isLoggedIn: State<Boolean>,
     onSplashComplete: () -> Unit,
     hideBottomScreen: () -> Unit,
 ) {
