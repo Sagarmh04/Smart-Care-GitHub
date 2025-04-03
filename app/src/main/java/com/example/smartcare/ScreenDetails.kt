@@ -18,6 +18,8 @@ sealed class OtherScreens(val route: String, val title: String, val icon: Int = 
     object Login : OtherScreens("login", "Login")
     object SplashScreen : OtherScreens("splash", "Splash Screen")
     object signup : OtherScreens("signup", "Signup")
-    object bookingScreen : OtherScreens(route = "bookingScreen", title = "bookingScreen")
-    object paymentScreen : OtherScreens(route = "paymentScreen", title = "paymentScreen")
+    object emergencyScreen : OtherScreens(route = "rideDetailsScreen", title = "rideDetailsScreen")
+    object offerARideScreen : OtherScreens(route = "offerARideScreen", title = "offerARideScreen")
+    object findARideScreen : OtherScreens(route = "findARideScreen", title = "findARideScreen")
+    object trendingScreen : OtherScreens(route = "trendingScreen", title = "trendingScreen")
 }

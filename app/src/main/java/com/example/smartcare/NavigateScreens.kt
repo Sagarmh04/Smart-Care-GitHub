@@ -18,7 +18,11 @@ import com.example.smartcare.ui.screen.ProfileScreen
 import com.example.smartcare.ui.screen.SignupScreen
 import com.example.smartcare.ui.screen.SplashScreen
 import com.example.smartcare.database.viewModel.ProfileViewModel
+import com.example.smartcare.ui.screen.EmergencyRide
+import com.example.smartcare.ui.screen.FindARideScreen
 import com.example.smartcare.ui.screen.MessageScreen
+import com.example.smartcare.ui.screen.OfferARideScreen
+import com.example.smartcare.ui.screen.TrendingScreen
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
@@ -108,6 +112,34 @@ fun NavigateScreens(
                 onSettings = {},
                 onEdit = {  }
             )
+        }
+        composable(
+            OtherScreens.trendingScreen.route,
+            enterTransition = { fadeIn(animationSpec = tween(50)) },
+            exitTransition = { fadeOut(animationSpec = tween(0)) }
+        ) {
+            TrendingScreen()
+        }
+        composable(
+            OtherScreens.findARideScreen.route,
+            enterTransition = { fadeIn(animationSpec = tween(50)) },
+            exitTransition = { fadeOut(animationSpec = tween(0)) }
+        ) {
+            FindARideScreen()
+        }
+        composable(
+            OtherScreens.emergencyScreen.route,
+            enterTransition = { fadeIn(animationSpec = tween(50)) },
+            exitTransition = { fadeOut(animationSpec = tween(0)) }
+        ) {
+            EmergencyRide()
+        }
+        composable(
+            OtherScreens.offerARideScreen.route,
+            enterTransition = { fadeIn(animationSpec = tween(50)) },
+            exitTransition = { fadeOut(animationSpec = tween(0)) }
+        ) {
+            OfferARideScreen()
         }
     }
 }
