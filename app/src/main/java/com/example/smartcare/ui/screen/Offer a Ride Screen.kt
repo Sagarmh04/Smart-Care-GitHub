@@ -1,120 +1,283 @@
 package com.example.smartcare.ui.screen
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.example.smartcare.database.entity.Ride
+import com.example.smartcare.database.viewModel.RideViewModel
+import java.util.*
 
-class OfferRideActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            OfferARideScreen()
-        }
-    }
-}
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OfferARideScreen(navController: NavController? = null) {
-    val primaryColor = Color(0xFF0041A9) // Deep Blue
-    val secondaryColor = Color(0xFF2C3E50) // Dark Blue
-    val backgroundColor = Color(0xFFECF0F1) // Soft White
+fun OfferRideScreen(
+    navController: NavController,
+    rideViewModel: RideViewModel
+) {
+    val scrollState = rememberScrollState()
 
-    var from by remember { mutableStateOf("") }
-    var to by remember { mutableStateOf("") }
+    // State variables for form fields
+    var pickupLocation by remember { mutableStateOf("") }
+    var destination by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") }
     var time by remember { mutableStateOf("") }
-    var seats by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
-    var vehicle by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
+    var rideType by remember { mutableStateOf("Solo") }
+    var paymentMethod by remember { mutableStateOf("Cash") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-            .padding(16.dp)
-    ) {
-        // Top Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(primaryColor)
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Offer a Ride",
-                fontSize = 22.sp,
-                color = Color.White,
-                fontWeight = FontWeight.Bold
+    // Predefined locations
+    val locations = listOf(
+        "Main Campus", "Library", "Student Center", "Engineering Building",
+        "Science Complex", "Arts Center", "Sports Complex", "Downtown",
+        "North Residence", "South Residence", "East Residence", "West Residence",
+        "Bus Terminal", "Train Station", "Shopping Mall", "Airport"
+    )
+
+    // Dropdown menu states
+    var pickupExpanded by remember { mutableStateOf(false) }
+    var destinationExpanded by remember { mutableStateOf(false) }
+    var rideTypeExpanded by remember { mutableStateOf(false) }
+    var paymentMethodExpanded by remember { mutableStateOf(false) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Offer a Ride") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
             )
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Input Fields
-        RideInputField("From (Start Location)", from) { from = it }
-        RideInputField("To (Destination)", to) { to = it }
-        RideInputField("Departure Time", time) { time = it }
-        RideInputField("Available Seats", seats, KeyboardType.Number) { seats = it }
-        RideInputField("Price per Seat (Optional)", price, KeyboardType.Number) { price = it }
-        RideInputField("Vehicle Details (Optional)", vehicle) { vehicle = it }
-        RideInputField("Notes for Passengers (Optional)", notes) { notes = it }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Confirm Ride Button
-        Button(
-            onClick = { /* Handle Ride Submission */ },
-            colors = ButtonDefaults.buttonColors(backgroundColor = primaryColor),
-            shape = RoundedCornerShape(8.dp),
-            modifier = Modifier.fillMaxWidth()
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+                .verticalScroll(scrollState),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Confirm Ride", fontSize = 18.sp, color = Color.White)
-        }
+            // Pickup Location Dropdown
+            ExposedDropdownMenuBox(
+                expanded = pickupExpanded,
+                onExpandedChange = { pickupExpanded = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                OutlinedTextField(
+                    value = pickupLocation,
+                    onValueChange = { pickupLocation = it },
+                    label = { Text("Pickup Location") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = pickupExpanded)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
 
-        Spacer(modifier = Modifier.height(16.dp))
+                ExposedDropdownMenu(
+                    expanded = pickupExpanded,
+                    onDismissRequest = { pickupExpanded = false }
+                ) {
+                    locations.forEach { location ->
+                        DropdownMenuItem(
+                            text = { Text(location) },
+                            onClick = {
+                                pickupLocation = location
+                                pickupExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
-        // Back Button
-        TextButton(
-            onClick = { navController?.popBackStack() },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text(text = "Back to Home", color = secondaryColor)
+            // Destination Dropdown
+            ExposedDropdownMenuBox(
+                expanded = destinationExpanded,
+                onExpandedChange = { destinationExpanded = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                OutlinedTextField(
+                    value = destination,
+                    onValueChange = { destination = it },
+                    label = { Text("Destination") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = destinationExpanded)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = destinationExpanded,
+                    onDismissRequest = { destinationExpanded = false }
+                ) {
+                    locations.forEach { location ->
+                        DropdownMenuItem(
+                            text = { Text(location) },
+                            onClick = {
+                                destination = location
+                                destinationExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Date Field
+            OutlinedTextField(
+                value = date,
+                onValueChange = { date = it },
+                label = { Text("Date (DD/MM/YYYY)") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                trailingIcon = {
+                    Icon(Icons.Default.DateRange, contentDescription = "Select Date")
+                }
+            )
+
+            // Time Field
+            OutlinedTextField(
+                value = time,
+                onValueChange = { time = it },
+                label = { Text("Time (HH:MM)") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            )
+
+            // Price Field
+            OutlinedTextField(
+                value = price,
+                onValueChange = { price = it },
+                label = { Text("Price (₹)") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            )
+
+            // Ride Type Dropdown
+            ExposedDropdownMenuBox(
+                expanded = rideTypeExpanded,
+                onExpandedChange = { rideTypeExpanded = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                OutlinedTextField(
+                    value = rideType,
+                    onValueChange = { rideType = it },
+                    label = { Text("Ride Type") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = rideTypeExpanded)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = rideTypeExpanded,
+                    onDismissRequest = { rideTypeExpanded = false }
+                ) {
+                    listOf("Solo", "Shared").forEach { type ->
+                        DropdownMenuItem(
+                            text = { Text(type) },
+                            onClick = {
+                                rideType = type
+                                rideTypeExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Payment Method Dropdown
+            ExposedDropdownMenuBox(
+                expanded = paymentMethodExpanded,
+                onExpandedChange = { paymentMethodExpanded = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 24.dp)
+            ) {
+                OutlinedTextField(
+                    value = paymentMethod,
+                    onValueChange = { paymentMethod = it },
+                    label = { Text("Payment Method") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = paymentMethodExpanded)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = paymentMethodExpanded,
+                    onDismissRequest = { paymentMethodExpanded = false }
+                ) {
+                    listOf("Cash", "Card", "UPI").forEach { method ->
+                        DropdownMenuItem(
+                            text = { Text(method) },
+                            onClick = {
+                                paymentMethod = method
+                                paymentMethodExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            // Submit Button
+            Button(
+                onClick = {
+                    // Create a new ride and save it
+                    val newRide = Ride(
+                        id = UUID.randomUUID().toString(),
+                        driverId = "current_user_id", // Replace with actual user ID
+                        passengerId = "",
+                        pickupLocation = pickupLocation,
+                        destination = destination,
+                        date = date,
+                        time = time,
+                        middleStops = emptyList(),
+                        status = "Available",
+                        price = price.toDoubleOrNull() ?: 0.0,
+                        rating = 0.0,
+                        review = "",
+                        paymentMethod = paymentMethod,
+                        paymentStatus = "Pending",
+                        rideType = rideType
+                    )
+
+                    rideViewModel.insertRide(newRide)
+                    navController.navigateUp()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                enabled = pickupLocation.isNotEmpty() && destination.isNotEmpty() &&
+                        date.isNotEmpty() && time.isNotEmpty() && price.isNotEmpty()
+            ) {
+                Text("Offer Ride")
+            }
         }
     }
 }
 
-@Composable
-fun RideInputField(label: String, value: String, keyboardType: KeyboardType = KeyboardType.Text, onValueChange: (String) -> Unit) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = keyboardType),
-        textStyle = TextStyle(fontSize = 16.sp),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewOfferRideScreen() {
-    OfferARideScreen()
-}

@@ -11,6 +11,7 @@ import androidx.compose.runtime.State
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.smartcare.database.Destination
 import com.example.smartcare.database.entity.ProfileData
 import com.example.smartcare.database.viewModel.MessageViewModel
 import com.example.smartcare.ui.screen.HomeScreen
@@ -19,12 +20,11 @@ import com.example.smartcare.ui.screen.ProfileScreen
 import com.example.smartcare.ui.screen.SignupScreen
 import com.example.smartcare.ui.screen.SplashScreen
 import com.example.smartcare.database.viewModel.ProfileViewModel
-import com.example.smartcare.ui.screen.EmergencyRide
-import com.example.smartcare.ui.screen.FindARideScreen
-import com.example.smartcare.ui.screen.MessageChatScreen
+import com.example.smartcare.database.viewModel.RideViewModel
+import com.example.smartcare.ui.screen.ChatScreen
+import com.example.smartcare.ui.screen.FindRideScreen
 import com.example.smartcare.ui.screen.MessageScreen
-import com.example.smartcare.ui.screen.OfferARideScreen
-import com.example.smartcare.ui.screen.TrendingScreen
+import com.example.smartcare.ui.screen.OfferRideScreen
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
@@ -37,10 +37,9 @@ fun NavigateScreens(
     profileViewModel: ProfileViewModel,
     messageViewModel: MessageViewModel,
     isLoggedIn: State<Boolean>,
-    onSplashComplete: () -> Unit,
-    hideBottomScreen: () -> Unit,
+    rideViewModel: RideViewModel,
 ) {
-    var user = Firebase.auth.currentUser
+    val user = Firebase.auth.currentUser
     NavHost(navController, startDestination = OtherScreens.SplashScreen.route) {
         composable(
             OtherScreens.SplashScreen.route,
@@ -50,20 +49,6 @@ fun NavigateScreens(
             SplashScreen(navController, profileViewModel,isLoggedIn)
         }
         composable(
-            route = BottomNavScreen.Home.route,
-            enterTransition = { fadeIn(animationSpec = tween(50)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
-            HomeScreen(innerPadding, navController, profileViewModel, onSplashComplete)
-        }
-        composable(
-            route = BottomNavScreen.MessageScreen.route,
-            enterTransition = { fadeIn(animationSpec = tween(50)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
-            MessageScreen(innerPadding,messageViewModel,navController,hideBottomScreen)
-        }
-        composable(
             OtherScreens.Login.route,
             enterTransition = { fadeIn(animationSpec = tween(50)) },
             exitTransition = { fadeOut(animationSpec = tween(0)) }
@@ -71,8 +56,7 @@ fun NavigateScreens(
             LoginScreen(onLoginSuccess = {
                 profileViewModel.updateLoginState(true)
                 navController.popBackStack()
-                onSplashComplete()
-                navController.navigate(BottomNavScreen.Home.route)
+                navController.navigate(Destination.Home.route)
             },
                 onSignupClick = {
                     navController.navigate(OtherScreens.signup.route) {
@@ -95,7 +79,7 @@ fun NavigateScreens(
                         profileViewModel.updateId(user.uid)
                     }
                     navController.popBackStack()
-                    navController.navigate(BottomNavScreen.Home.route)
+                    navController.navigate(Destination.Home.route)
                 },
                 onLoginClick = {
                     navController.navigate(OtherScreens.Login.route) {
@@ -122,42 +106,43 @@ fun NavigateScreens(
                 onEdit = {  }
             )
         }
-        composable(
-            OtherScreens.trendingScreen.route,
-            enterTransition = { fadeIn(animationSpec = tween(50)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
-            TrendingScreen(navController)
+        composable(Destination.Home.route) {
+            HomeScreen(
+                navController = navController,
+                rideViewModel = rideViewModel,
+                innerPadding
+            )
+        }
+        composable(Destination.Messages.route) {
+            MessageScreen(
+                navController = navController,
+                rideViewModel = rideViewModel,
+                innerPadding
+            )
+        }
+        composable(Destination.OfferRide.route) {
+            OfferRideScreen(
+                navController = navController,
+                rideViewModel = rideViewModel
+            )
+        }
+        composable(Destination.FindRide.route) {
+            FindRideScreen(
+                navController = navController,
+                rideViewModel = rideViewModel
+            )
         }
         composable(
-            OtherScreens.findARideScreen.route,
-            enterTransition = { fadeIn(animationSpec = tween(50)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
-            FindARideScreen()
-        }
-        composable(
-            OtherScreens.emergencyScreen.route,
-            enterTransition = { fadeIn(animationSpec = tween(50)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
-            EmergencyRide()
-        }
-        composable(
-            OtherScreens.offerARideScreen.route,
-            enterTransition = { fadeIn(animationSpec = tween(50)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
-            OfferARideScreen()
-        }
-        composable(
-            OtherScreens.MessageChatScreen.route,
-            enterTransition = { fadeIn(animationSpec = tween(50)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
-            if (user != null) {
-                MessageChatScreen(navController,messageViewModel, user.uid, hideBottomScreen)
-            }
+            route = "${Destination.Chat.route}/{userId}",
+            arguments = Destination.Chat.arguments
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")
+            ChatScreen(
+                navController = navController,
+                userId = userId ?: "",
+                rideViewModel = rideViewModel,
+                innerPadding
+            )
         }
         }
     }

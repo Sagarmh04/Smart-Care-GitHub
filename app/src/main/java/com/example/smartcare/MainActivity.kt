@@ -29,6 +29,8 @@ import com.example.smartcare.database.viewModel.MessageViewModelFactory
 import com.example.smartcare.ui.theme.white
 import com.example.smartcare.database.viewModel.ProfileViewModel
 import com.example.smartcare.database.viewModel.ProfileViewModelFactory
+import com.example.smartcare.database.viewModel.RideViewModel
+import com.example.smartcare.database.viewModel.RideViewModelFactory
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.FirebaseApp
 
@@ -40,12 +42,14 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         val profileDao = MainApplication.profileDatabase.profileDao()
         val messageDao = MainApplication.profileDatabase.messageDao()
-
+        val rideDao = MainApplication.profileDatabase.rideDao()
 // Profile ViewModel
         val profileFactory = ProfileViewModelFactory(profileDao)
         val profileViewModel = ViewModelProvider(this, profileFactory)[ProfileViewModel::class.java]
         val messageFactory = MessageViewModelFactory(messageDao)
         val messageViewModel = ViewModelProvider(this, messageFactory)[MessageViewModel::class.java]
+        val rideFactory = RideViewModelFactory(rideDao)
+        val rideViewModel = ViewModelProvider(this, rideFactory)[RideViewModel::class.java]
 
 
         enableEdgeToEdge()
@@ -96,12 +100,7 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(AppTheme.colors.background)
                 ) {
-                    Scaffold(
-                        bottomBar = {
-                            if(isLoggedIn.value &&showBottomBar)
-                                BottomNavigationBar(navController)
-                        } // ✅ Bottom bar inside Scaffold
-                    ) { innerPadding ->
+                    Scaffold{ innerPadding ->
                         NavigateScreens(
                             innerPadding,
                             navController,
@@ -109,8 +108,7 @@ class MainActivity : ComponentActivity() {
                             profileViewModel,
                             messageViewModel,
                             isLoggedIn,
-                            onSplashComplete = { showBottomBar = true },
-                            hideBottomScreen = { showBottomBar = false }
+                            rideViewModel
                         )
                     }
                 }

@@ -8,7 +8,6 @@ import com.google.firebase.FirebaseApp
 class MainApplication : Application() {
     companion object {
         lateinit var profileDatabase: ProfileDatabase
-        lateinit var messageDatabase: ProfileDatabase
             private set
     }
 

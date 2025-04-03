@@ -8,8 +8,10 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.example.smartcare.database.dao.MessageDAO
 import com.example.smartcare.database.dao.ProfileDAO
+import com.example.smartcare.database.dao.RideDAO
 import com.example.smartcare.database.entity.Message
 import com.example.smartcare.database.entity.ProfileData
+import com.example.smartcare.database.entity.Ride
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -27,12 +29,13 @@ class Converters {
     }
 }
 
-@Database(entities = [ProfileData::class, Message::class], version = 1, exportSchema = false)
+@Database(entities = [ProfileData::class, Message::class, Ride::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class ProfileDatabase : RoomDatabase() {
 
     abstract fun profileDao(): ProfileDAO
     abstract fun messageDao(): MessageDAO
+    abstract fun rideDao():RideDAO
 
     companion object {
         const val NAME = "Profile_DB"
