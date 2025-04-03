@@ -249,10 +249,11 @@ fun signUp(
     address: String,
     contact: String,
     height: Int,
-    weight: Int
+    weight: Int,
+    auth: FirebaseAuth,
+    db: FirebaseFirestore
 ) {
-    val auth = FirebaseAuth.getInstance()
-    val db = FirebaseFirestore.getInstance()
+
 
     auth.createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
@@ -298,7 +299,9 @@ fun signUp(
 fun SignupScreen(
     onSignupSuccess: () -> Unit,
     onLoginClick: () -> Unit,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    auth: FirebaseAuth,
+    db: FirebaseFirestore
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -666,7 +669,10 @@ fun SignupScreen(
                                 email = email,
                                 password = password,
                                 onSignUpSuccess=onSignupSuccess,
-                            onSignUpFailure={e->})
+                            onSignUpFailure={e->},
+                                auth =auth,
+                                db = db
+                            )
                         } finally {
                             isLoading = false
                         }

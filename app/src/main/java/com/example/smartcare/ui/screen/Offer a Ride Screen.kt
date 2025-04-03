@@ -267,6 +267,10 @@ fun OfferRideScreen(
                     )
 
                     rideViewModel.insertRide(newRide)
+                    rideViewModel.saveRide(newRide,
+                        onSuccess = { },
+                        onFailure = { }
+                    )
                     navController.navigateUp()
                 },
                 modifier = Modifier

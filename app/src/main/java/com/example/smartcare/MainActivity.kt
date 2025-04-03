@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
 import com.example.smartcare.database.entity.ProfileData
+import com.example.smartcare.database.viewModel.ChatUserViewModel
+import com.example.smartcare.database.viewModel.ChatUserViewModelFactory
 import com.example.smartcare.database.viewModel.MessageViewModel
 import com.example.smartcare.database.viewModel.MessageViewModelFactory
 import com.example.smartcare.ui.theme.white
@@ -33,6 +35,8 @@ import com.example.smartcare.database.viewModel.RideViewModel
 import com.example.smartcare.database.viewModel.RideViewModelFactory
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : ComponentActivity() {
 
@@ -43,6 +47,9 @@ class MainActivity : ComponentActivity() {
         val profileDao = MainApplication.profileDatabase.profileDao()
         val messageDao = MainApplication.profileDatabase.messageDao()
         val rideDao = MainApplication.profileDatabase.rideDao()
+        val chatUserDao = MainApplication.profileDatabase.chatUserDao()
+        val auth = FirebaseAuth.getInstance()
+        val db = FirebaseFirestore.getInstance()
 // Profile ViewModel
         val profileFactory = ProfileViewModelFactory(profileDao)
         val profileViewModel = ViewModelProvider(this, profileFactory)[ProfileViewModel::class.java]
@@ -50,6 +57,8 @@ class MainActivity : ComponentActivity() {
         val messageViewModel = ViewModelProvider(this, messageFactory)[MessageViewModel::class.java]
         val rideFactory = RideViewModelFactory(rideDao)
         val rideViewModel = ViewModelProvider(this, rideFactory)[RideViewModel::class.java]
+        val chatUserFactory = ChatUserViewModelFactory(chatUserDao)
+        val chatUserViewModel = ViewModelProvider(this, chatUserFactory)[ChatUserViewModel::class.java]
 
 
         enableEdgeToEdge()
@@ -108,7 +117,10 @@ class MainActivity : ComponentActivity() {
                             profileViewModel,
                             messageViewModel,
                             isLoggedIn,
-                            rideViewModel
+                            rideViewModel,
+                            chatUserViewModel,
+                            auth,
+                            db
                         )
                     }
                 }

@@ -6,9 +6,11 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import com.example.smartcare.database.dao.ChatUserDAO
 import com.example.smartcare.database.dao.MessageDAO
 import com.example.smartcare.database.dao.ProfileDAO
 import com.example.smartcare.database.dao.RideDAO
+import com.example.smartcare.database.entity.ChatUser
 import com.example.smartcare.database.entity.Message
 import com.example.smartcare.database.entity.ProfileData
 import com.example.smartcare.database.entity.Ride
@@ -29,13 +31,14 @@ class Converters {
     }
 }
 
-@Database(entities = [ProfileData::class, Message::class, Ride::class], version = 1, exportSchema = false)
+@Database(entities = [ProfileData::class, Message::class, Ride::class, ChatUser::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class ProfileDatabase : RoomDatabase() {
 
     abstract fun profileDao(): ProfileDAO
     abstract fun messageDao(): MessageDAO
     abstract fun rideDao():RideDAO
+    abstract fun chatUserDao(): ChatUserDAO
 
     companion object {
         const val NAME = "Profile_DB"

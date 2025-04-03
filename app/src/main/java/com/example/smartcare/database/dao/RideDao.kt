@@ -33,9 +33,15 @@ interface RideDAO {
     @Query("SELECT * FROM Ride ORDER BY date DESC, time DESC")
     fun getAllRides(): LiveData<List<Ride>>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdateAll(rides: List<Ride>)
+
     @Query("UPDATE Ride SET status = :newStatus WHERE id = :rideId")
     suspend fun updateRideStatus(rideId: String, newStatus: String)
 
     @Query("UPDATE Ride SET rating = :newRating, review = :newReview WHERE id = :rideId")
     suspend fun updateRideRating(rideId: String, newRating: Double, newReview: String)
+
+    @Query("SELECT EXISTS (SELECT 1 FROM Ride WHERE id = :rideId)")
+    fun doesRideExist(rideId: String): Boolean
 }

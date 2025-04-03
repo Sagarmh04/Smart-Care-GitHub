@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.smartcare.database.Destination
 import com.example.smartcare.database.entity.ProfileData
+import com.example.smartcare.database.viewModel.ChatUserViewModel
 import com.example.smartcare.database.viewModel.MessageViewModel
 import com.example.smartcare.ui.screen.HomeScreen
 import com.example.smartcare.ui.screen.LoginScreen
@@ -26,7 +27,9 @@ import com.example.smartcare.ui.screen.FindRideScreen
 import com.example.smartcare.ui.screen.MessageScreen
 import com.example.smartcare.ui.screen.OfferRideScreen
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
@@ -38,6 +41,9 @@ fun NavigateScreens(
     messageViewModel: MessageViewModel,
     isLoggedIn: State<Boolean>,
     rideViewModel: RideViewModel,
+    chatUserViewModel: ChatUserViewModel,
+    auth: FirebaseAuth,
+    db: FirebaseFirestore,
 ) {
     val user = Firebase.auth.currentUser
     NavHost(navController, startDestination = OtherScreens.SplashScreen.route) {
@@ -86,7 +92,9 @@ fun NavigateScreens(
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                profileViewModel = profileViewModel
+                profileViewModel = profileViewModel,
+                auth,
+                db
             )
         }
         composable(
@@ -110,14 +118,18 @@ fun NavigateScreens(
             HomeScreen(
                 navController = navController,
                 rideViewModel = rideViewModel,
-                innerPadding
+                innerPadding,
+                chatUserViewModel,
+                db
             )
         }
         composable(Destination.Messages.route) {
             MessageScreen(
                 navController = navController,
                 rideViewModel = rideViewModel,
-                innerPadding
+                innerPadding,
+                chatUserViewModel,
+                db
             )
         }
         composable(Destination.OfferRide.route) {
