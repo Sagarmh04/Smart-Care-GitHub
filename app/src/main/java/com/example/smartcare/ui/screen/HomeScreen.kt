@@ -59,10 +59,9 @@ fun HomeScreen(
 
     fun RideOptionButton(text: String, color: Color, function: () -> Unit) {
         Button(
-            onClick = { /* Handle button click */ },
+            onClick = { function() },
             colors = ButtonDefaults.buttonColors(containerColor = white),
             modifier = Modifier.padding(8.dp)
-                .clickable { function() }
         ) {
             Text(text = text, color = Color.Black)
         }
