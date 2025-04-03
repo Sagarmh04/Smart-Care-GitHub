@@ -132,7 +132,7 @@ fun HomeScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(primaryColor)
+                                .background(color = Color(0xFF000080))
                                 .padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -146,7 +146,7 @@ fun HomeScreen(
                             Text(
                                 text = "CampusCruze",
                                 fontSize = 22.sp,
-                                color = secondaryColor,
+                                color = Color.White,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -184,7 +184,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Sample Ride Cards
-                        RideCard("John Doe", "Campus Gate", "City Center", "2:30 PM", 3, "₹50", primaryColor
+                        RideCard("John Doe", "Campus Gate", "City Center", "2:30 PM", 3, "₹50",color = Color(0xFFb3e6ff)
                         ) { navController.navigate(OtherScreens.trendingScreen.route) }
                         RideCard(
                             "Emily Smith",
@@ -193,7 +193,7 @@ fun HomeScreen(
                             "3:00 PM",
                             2,
                             "₹40",
-                            primaryColor
+                            color=Color(0xFFb3e6ff)
                         ) { navController.navigate(OtherScreens.trendingScreen.route) }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -257,11 +257,13 @@ fun RideCard(
             .fillMaxWidth()
             .padding(vertical = 6.dp)
             .clickable { function() }
+            .background(color=Color(0xFF99d6ff))
 
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.padding(16.dp).background(color=Color(0xFF99d6ff)),
+            verticalAlignment = Alignment.CenterVertically,
+
         ) {
             Icon(
                 painter = painterResource(id = android.R.drawable.ic_menu_mylocation), // Replace with profile image
