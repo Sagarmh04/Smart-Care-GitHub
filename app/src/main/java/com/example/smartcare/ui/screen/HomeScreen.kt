@@ -1,6 +1,7 @@
 package com.example.smartcare.ui.screen
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,12 +34,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.smartcare.OtherScreens
+import com.example.smartcare.R
 import com.example.smartcare.ui.theme.white
 import com.example.smartcare.database.viewModel.ProfileViewModel
 
@@ -55,17 +62,45 @@ fun HomeScreen(
         val isLoggedIn = profileViewModel.isLoggedIn.observeAsState(initial = null)
     val scrollState = rememberScrollState()
     var searchQuery by remember { mutableStateOf("") }
-    @Composable
 
+
+    @Composable
     fun RideOptionButton(text: String, color: Color, function: () -> Unit) {
-        Button(
-            onClick = { function() },
-            colors = ButtonDefaults.buttonColors(containerColor = white),
-            modifier = Modifier.padding(8.dp)
+        Box(
+            modifier = Modifier
+                .width(200.dp)
+                .height(200.dp)
+                .clickable { function() } // Makes entire Box clickable
         ) {
-            Text(text = text, color = Color.Black)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Clickable Image
+                Image(
+                    painter = painterResource(id = R.drawable.img), // Replace with actual image
+                    contentDescription = "Ride Option Icon",
+                    modifier = Modifier
+                        .size(170.dp)  // Adjust image size
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { function() } // Make Image clickable
+                )
+
+                Spacer(modifier = Modifier.height(8.dp)) // Space between Image & Text
+
+                // Text inside Box instead of Button for better spacing
+                Text(
+                    text = text,
+                    color = Color.Black,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Serif
+                )
+            }
         }
     }
+
+
 
     when(isLoggedIn.value) {
             false-> Column(modifier = Modifier.fillMaxSize()) {
@@ -109,7 +144,7 @@ fun HomeScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Campus Rides",
+                                text = "CampusCruze",
                                 fontSize = 22.sp,
                                 color = secondaryColor,
                                 fontWeight = FontWeight.Bold
@@ -120,11 +155,7 @@ fun HomeScreen(
 
                         // Search Bar
 
-                        SearchBarWithDropdown()
 
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Ride Options (Offer a Ride | Find a Ride)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceEvenly
@@ -136,18 +167,19 @@ fun HomeScreen(
                             }
                             RideOptionButton(
                                 text = "Find a Ride",
+
                                 primaryColor
                             ) { navController.navigate(OtherScreens.findARideScreen.route) }
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(30.dp))
 
                         // Trending Rides Section
                         Text(
-                            text = "Trending Rides",
+                            text = "Previous Rides",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
-                            color = secondaryColor
+                            color =Color.Blue
                         )
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -167,22 +199,7 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Emergency Requests Box
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color.Red)
-                                .padding(16.dp)
-                                .clickable { navController.navigate(OtherScreens.emergencyScreen) },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "🚨 Emergency Request",
-                                fontSize = 18.sp,
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+
 
                         Spacer(modifier = Modifier.weight(1f))
 
@@ -215,7 +232,7 @@ fun RideOptionButton(text: String, color: Color) {
     Button(
         onClick = { /* Handle Click */ },
         colors = ButtonDefaults.buttonColors(containerColor =Color.White),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(50.dp),
         modifier = Modifier
             .width(160.dp)
             .height(50.dp)
@@ -261,3 +278,4 @@ fun RideCard(
         }
     }
 }
+

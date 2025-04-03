@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
 data class TrendingRide(
     val driverName: String,
@@ -33,7 +34,7 @@ data class TrendingRide(
 )
 
 @Composable
-fun TrendingScreen(navController: androidx.navigation.NavController) {
+fun TrendingScreen(navController: NavController) {
     val trendingRides = listOf(
         TrendingRide("Amit Sharma", "Hostel", "Library", "10:30 AM", 2, "₹50", R.drawable.location),
         TrendingRide("Neha Verma", "Main Gate", "Cafeteria", "12:00 PM", 3, "₹40", R.drawable.female),

@@ -1,7 +1,5 @@
 package com.example.smartcare.ui.screen
 
-import androidx.compose.runtime.Composable
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -21,13 +19,22 @@ import androidx.compose.ui.unit.sp
 fun FindARideScreen() {
     var from by remember { mutableStateOf("") }
     var to by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") }
+    var time by remember { mutableStateOf("") }
+    var vehicleType by remember { mutableStateOf("") }
+    var gender by remember { mutableStateOf("") }
     var showRides by remember { mutableStateOf(false) }
 
-    Column(modifier = Modifier.fillMaxSize().background(Color(0xFFECF0F1))) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White) // White Background
+    ) {
         // Top Bar
+        Spacer(modifier = Modifier.height(30.dp))
         TopAppBar(
             title = { Text("Find a Ride", color = Color.White) },
-            backgroundColor = Color(0xFF1ABC9C)
+            backgroundColor = Color(0xFF004a95) // Dark Navy Blue
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -41,10 +48,43 @@ fun FindARideScreen() {
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = to,
                 onValueChange = { to = it },
                 label = { Text("To") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = date,
+                onValueChange = { date = it },
+                label = { Text("Date (DD/MM/YYYY)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = time,
+                onValueChange = { time = it },
+                label = { Text("Time (HH:MM AM/PM)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = vehicleType,
+                onValueChange = { vehicleType = it },
+                label = { Text("Vehicle Type (Car/Bike)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = gender,
+                onValueChange = { gender = it },
+                label = { Text("Driver Gender (Male/Female)") },
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -54,60 +94,12 @@ fun FindARideScreen() {
         // Find Rides Button
         Button(
             onClick = { showRides = true },
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF1ABC9C))
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF004a95)) // Dark Navy Blue
         ) {
             Text("Find Rides", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
         }
-
-        // Available Rides List
-        if (showRides) {
-            AvailableRidesList()
-        }
     }
 }
-
-@Composable
-fun AvailableRidesList() {
-    val rideList = listOf(
-        Ride("John Doe", "Campus A", "Campus B", "10:30 AM", 3, "₹100"),
-        Ride("Sarah Lee", "Campus C", "Campus D", "12:00 PM", 2, "₹80"),
-        Ride("Michael Scott", "Campus A", "Campus E", "2:30 PM", 4, "₹120")
-    )
-
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        rideList.forEach { ride ->
-            RideCard(ride)
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-    }
-}
-
-@Composable
-fun RideCard(ride: Ride) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable {},
-        elevation = 4.dp,
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Image(painter = painterResource(id = android.R.drawable.ic_menu_myplaces), contentDescription = "Profile Pic")
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(ride.driverName, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF2C3E50))
-                Text("${ride.from} → ${ride.to}", fontSize = 14.sp, color = Color.Gray)
-                Text("${ride.time} | Seats: ${ride.seatsAvailable}", fontSize = 14.sp, color = Color.Gray)
-                Text("Price: ${ride.price}", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1ABC9C))
-            }
-        }
-    }
-}
-
-data class Ride(
-    val driverName: String,
-    val from: String,
-    val to: String,
-    val time: String,
-    val seatsAvailable: Int,
-    val price: String
-)

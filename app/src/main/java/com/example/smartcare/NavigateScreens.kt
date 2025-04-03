@@ -118,7 +118,7 @@ fun NavigateScreens(
             enterTransition = { fadeIn(animationSpec = tween(50)) },
             exitTransition = { fadeOut(animationSpec = tween(0)) }
         ) {
-            TrendingScreen()
+            TrendingScreen(navController)
         }
         composable(
             OtherScreens.findARideScreen.route,

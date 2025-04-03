@@ -32,7 +32,7 @@ class OfferRideActivity : ComponentActivity() {
 
 @Composable
 fun OfferARideScreen(navController: NavController? = null) {
-    val primaryColor = Color(0xFF1ABC9C) // Teal
+    val primaryColor = Color(0xFF0041A9) // Deep Blue
     val secondaryColor = Color(0xFF2C3E50) // Dark Blue
     val backgroundColor = Color(0xFFECF0F1) // Soft White
 
@@ -61,7 +61,7 @@ fun OfferARideScreen(navController: NavController? = null) {
             Text(
                 text = "Offer a Ride",
                 fontSize = 22.sp,
-                color = secondaryColor,
+                color = Color.White,
                 fontWeight = FontWeight.Bold
             )
         }
