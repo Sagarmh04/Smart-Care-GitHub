@@ -25,6 +25,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -59,7 +61,12 @@ fun HomeScreen(
     onSplashComplete: () -> Unit,
 ) {
 
-        val isLoggedIn = profileViewModel.isLoggedIn.observeAsState(initial = null)
+    LaunchedEffect(onSplashComplete()) {
+        onSplashComplete()
+    }
+        val isLoggedIn = profileViewModel.isLoggedIn.collectAsState(
+            initial = false
+        ).value
     val scrollState = rememberScrollState()
     var searchQuery by remember { mutableStateOf("") }
 
@@ -78,7 +85,7 @@ fun HomeScreen(
             ) {
                 // Clickable Image
                 Image(
-                    painter = painterResource(id = R.drawable.img), // Replace with actual image
+                    painter = painterResource(R.drawable.img), // Replace with actual image
                     contentDescription = "Ride Option Icon",
                     modifier = Modifier
                         .size(170.dp)  // Adjust image size
@@ -102,7 +109,7 @@ fun HomeScreen(
 
 
 
-    when(isLoggedIn.value) {
+    when(isLoggedIn) {
             false-> Column(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator()
                 Text("Loading...")
@@ -137,7 +144,7 @@ fun HomeScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                painter = painterResource(id = android.R.drawable.ic_menu_compass), // Replace with your app logo
+                                painter = painterResource(id = R.drawable.splash_screen), // Replace with your app logo
                                 contentDescription = "App Logo",
                                 tint = Color.White,
                                 modifier = Modifier.size(32.dp)
@@ -266,7 +273,7 @@ fun RideCard(
 
         ) {
             Icon(
-                painter = painterResource(id = android.R.drawable.ic_menu_mylocation), // Replace with profile image
+                painter = painterResource(id = R.drawable.default_profile_screen), // Replace with profile image
                 contentDescription = "Driver Image",
                 tint = color,
                 modifier = Modifier.size(40.dp)

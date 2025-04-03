@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
-import com.example.smartcare.database.entity.Message
+import com.example.smartcare.database.entity.ProfileData
 import com.example.smartcare.database.viewModel.MessageViewModel
 import com.example.smartcare.database.viewModel.MessageViewModelFactory
 import com.example.smartcare.ui.theme.white
@@ -68,8 +68,25 @@ class MainActivity : ComponentActivity() {
 
 
             SmartCareTheme {
-                val profile by profileViewModel.profile.observeAsState()
-                val isLoggedIn by profileViewModel.isLoggedIn.observeAsState()
+                val profile by profileViewModel.profile.collectAsState(initial =
+                    ProfileData(
+                        idOne = 1,
+                        id = "TODO",
+                        name = "TODO()",
+                        age = 0,
+                        gender = "TODO()",
+                        height = 9,
+                        weight = 2,
+                        bloodGroup = "TODO()",
+                        address = "TODO()",
+                        contact = "TODO()",
+                        email = "TODO()",
+                        profilePic = "TODO()",
+                        isCompleted = false,
+                        isLoggedIn = false
+                    )
+                )
+                val isLoggedIn = profileViewModel.isLoggedIn.collectAsState(initial = false)
                 LaunchedEffect(Unit) {
                     profileViewModel.ensureProfileExists()
                 }
@@ -81,15 +98,17 @@ class MainActivity : ComponentActivity() {
                 ) {
                     Scaffold(
                         bottomBar = {
-                            if(isLoggedIn == true&&showBottomBar)
+                            if(isLoggedIn.value &&showBottomBar)
                                 BottomNavigationBar(navController)
                         } // ✅ Bottom bar inside Scaffold
                     ) { innerPadding ->
                         NavigateScreens(
                             innerPadding,
                             navController,
-                            profile, profileViewModel,
+                            profile,
+                            profileViewModel,
                             messageViewModel,
+                            isLoggedIn,
                             onSplashComplete = { showBottomBar = true },
                             hideBottomScreen = { showBottomBar = false }
                         )
