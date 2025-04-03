@@ -32,12 +32,14 @@ import com.example.smartcare.viewModel.MedicalRecordViewModelFactory
 import com.example.smartcare.viewModel.ProfileViewModel
 import com.example.smartcare.viewModel.ProfileViewModelFactory
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
         val profileDao = MainApplication.profileDatabase.profileDao()
         val medicalDao = MainApplication.profileDatabase.medicalRecordDao()
         val appointmentDao = MainApplication.profileDatabase.appointmentDao()

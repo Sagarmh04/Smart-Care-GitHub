@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt") // Using KAPT for both Room and Hilt
     id ("kotlin-parcelize")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -46,6 +47,9 @@ dependencies {
     implementation("androidx.compose.material:material:1.5.1")
     implementation("androidx.navigation:navigation-compose:2.7.2")
     implementation("androidx.compose.ui:ui-graphics:1.5.1")
+    implementation (platform("com.google.firebase:firebase-bom:32.3.1")) // Add this line
+    implementation ("com.google.firebase:firebase-auth") // For authentication
+    implementation ("com.google.firebase:firebase-firestore") // For Firestore
     // Lifecycle components
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")

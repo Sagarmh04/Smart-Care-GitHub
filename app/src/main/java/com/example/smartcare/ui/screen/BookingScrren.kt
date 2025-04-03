@@ -69,6 +69,8 @@ import com.example.smartcare.AppointmentLists
 import com.example.smartcare.BottomNavScreen
 import com.example.smartcare.Hospitals.Doctor
 import com.example.smartcare.Hospitals.allHospitalData
+import com.example.smartcare.Hospitals.selectedCityName
+import com.example.smartcare.OtherScreens
 import com.example.smartcare.viewModel.AppointmentViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -244,31 +246,30 @@ fun AppointmentBookingScreen(
         ) {
             ExtendedFloatingActionButton(
                 onClick = {
-                    val hospitalData = allHospitalData.find { it.cityName.equals(selectedCity) }
+                    val hospitalData = allHospitalData.find { it.cityName.equals(selectedCityName) }
                     val hospitalDataIndex = allHospitalData.indexOf(hospitalData)
-                    val hospital = hospitalData?.hospitals?.find { it.cityId.equals(selectedCity) }
+                    val hospital = hospitalData?.hospitals?.find { it.cityId.equals(selectedCityName) }
                     val hospitalIndex = hospitalData?.hospitals?.indexOf(hospital)
                     val doctorIndex = hospital?.doctors?.indexOf(doctor)
                     selectedSlot?.let { index ->
                         if (doctor != null) {
-                            appointmentViewModel.insertAppointment(
-                                AppointmentLists(
-                                    id = 0,
-                                    doctorName = doctor.name,
-                                    doctorImageUrl = "",
-                                    date = currentDate,
-                                    time = calculateTimeFromIndex(index),
-                                    reason = doctor.specialization.firstOrNull() ?: "Checkup",
-                                    status = "Pending",
-                                    isCompleted = false,
-                                    hospitalDataIndex =  hospitalDataIndex,
-                                    hospitalIndex= hospitalIndex?:0,
-                                    doctorIndex = doctorIndex?:0,
-                                    appointmentIndex = index
-                                )
-                            )
+                            navController.currentBackStackEntry?.savedStateHandle?.set("data",AppointmentLists(
+                                id = 0,
+                                doctorName = doctor.name,
+                                doctorImageUrl = "",
+                                date = currentDate,
+                                time = calculateTimeFromIndex(index),
+                                reason = doctor.specialization.firstOrNull() ?: "Checkup",
+                                status = "Pending",
+                                isCompleted = false,
+                                hospitalDataIndex = hospitalDataIndex,
+                                hospitalIndex = hospitalIndex ?: 0,
+                                doctorIndex = doctorIndex ?: 0,
+                                appointmentIndex = index,
+                                hospitalName = allHospitalData[hospitalDataIndex].hospitals[hospitalIndex!!].name,
+                                cityName = allHospitalData[hospitalDataIndex].cityName
+                            ))
                         }
-                        allHospitalData[hospitalDataIndex].hospitals[hospitalIndex!!].doctors[doctorIndex!!].appointments[index] = false
 
 
 
@@ -282,7 +283,7 @@ fun AppointmentBookingScreen(
 
                         selectedSlot = null
                     }
-                    navController.navigate(BottomNavScreen.Home.route)
+                    navController.navigate(OtherScreens.paymentScreen.route)
                 },
                 icon = { Icon(Icons.Filled.Check, contentDescription = "Confirm") },
                 text = { Text("Confirm Appointment") },

@@ -44,6 +44,7 @@ fun BottomNavigationBar(navController: NavHostController, modifier: Modifier = M
                     if (navController.currentDestination?.route != screen.route) {
                         navController.navigate(screen.route) {
                             launchSingleTop = true
+
                         }
                         currentRoute=screen.route
                     }

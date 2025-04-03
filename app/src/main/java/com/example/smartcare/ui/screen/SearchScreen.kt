@@ -5,10 +5,13 @@ import android.content.Context
 import android.os.Build
 import android.view.inputmethod.InputMethodManager
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -46,7 +50,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
@@ -69,6 +72,7 @@ import com.example.smartcare.City.City
 import com.example.smartcare.City.parsedCities
 import com.example.smartcare.Hospitals.Hospital
 import com.example.smartcare.Hospitals.allHospitalData
+import com.example.smartcare.Hospitals.selectedCityName
 import com.example.smartcare.ui.theme.white
 import com.example.smartcare.viewModel.SearchViewModel
 import kotlinx.coroutines.delay
@@ -101,8 +105,9 @@ fun SearchScreen(
         imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0)
     }
     LaunchedEffect(Unit) {
-        viewModel.allCities.value?.let { viewModel.selectCity(it.get(0)) }
-    }
+        if(viewModel.selectedCity.value?.name?.isEmpty() == true) {
+            viewModel.allCities.value?.let { viewModel.selectCity(it.get(0)) }
+        }}
     // Wrap entire screen in Box for bottom sheet placement
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -159,6 +164,7 @@ fun SearchScreen(
                         viewModel.selectCity(city)
                         isSearchingLocation = false
                         searchQuery = ""
+                        selectedCityName= city.name
                     }
                 )
             } else {
@@ -185,9 +191,8 @@ fun SearchScreen(
                             filteredHospitals,
                             hospitalQuery,
                             onHospitalSelect = { hospital ->
-                                val name = selectedCity?.name
                                 navController.currentBackStackEntry?.savedStateHandle?.set("city",
-                                    name
+                                    selectedCityName
                                 )
                                 navController.currentBackStackEntry?.savedStateHandle?.set(key = "hospital",hospital)
                                 navController.navigate("hospitalDetails")
@@ -254,9 +259,11 @@ fun MainContentSection(
     viewModel: SearchViewModel,
     selectedCity: City?
 ) {
+    var filteredHospital by remember { mutableStateOf(filteredHospitals) }
     val selectedCity by viewModel.selectedCity.observeAsState()
     val hospitalQuery by viewModel.hospitalSearchQuery.observeAsState("")
     var showFilters by remember { mutableStateOf(false) }
+    var selectedSpeciality by remember { mutableStateOf("") }
     Column(modifier = Modifier
         .verticalScroll(rememberScrollState())
         .fillMaxSize()) {
@@ -273,8 +280,12 @@ fun MainContentSection(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 4. Categories Row (Will enhance in next steps)
-
+        HealthcareCategoriesRow(onClick = {category ->
+            selectedSpeciality=category
+        })
+        if(selectedSpeciality != ""){
+            filteredHospital = filteredHospitals.filter { it.specialties.contains(selectedSpeciality) }
+        }
         Spacer(modifier = Modifier.height(24.dp))
 
         // 5. Hospitals Header
@@ -286,7 +297,7 @@ fun MainContentSection(
         )
 
         HospitalList(
-            hospitals = filteredHospitals,
+            hospitals = filteredHospital,
             onHospitalClick = { hospital ->
                 val name = selectedCity?.name
                 navController.currentBackStackEntry?.savedStateHandle?.set("city",
@@ -623,4 +634,57 @@ private fun CityListItem(city: City, onSelect: () -> Unit) {
     }
 }
 
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun HealthcareCategoriesRow(onClick: (speciality: String) -> Unit) {
+    val categories = listOf(
+        "General Practice", "Pediatrics", "Cardiology", "Dermatology", "Dentistry",
+        "Orthopedics", "Gynecology", "Neurology", "Ophthalmology", "Psychiatry",
+        "Oncology", "Gastroenterology", "Endocrinology", "Urology", "Radiology"
+    )
+
+    val colors = listOf(
+        Color(0xFF6200EE), Color(0xFF3700B3), Color(0xFF03DAC5), Color(0xFF123456), Color(0xFF7654A9),
+        Color(0xFFFF6F61), Color(0xFF6B5B95), Color(0xFF8D6E63), Color(0xFFB39DDB), Color(0xFF9575CD),
+        Color(0xFF7986CB), Color(0xFF5C6BC0), Color(0xFF3F51B5), Color(0xFF3949AB), Color(0xFF303F9F)
+    )
+
+    LazyRow(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
+        items(categories) { category ->
+            val color = colors[categories.indexOf(category) % colors.size]
+            CategoryCard(category = category, color = color, onClick)
+        }
+    }
+}
+
+@Composable
+fun CategoryCard(category: String, color: Color, onClick: (speciality: String) -> Unit) {
+    Card(
+        modifier = Modifier
+            .width(150.dp)
+            .height(100.dp)
+            .clickable { onClick(category) },
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .background(color)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = category,
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
 

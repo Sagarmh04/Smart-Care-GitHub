@@ -16,6 +16,7 @@ import com.example.smartcare.ui.screen.AppointmentBookingScreen
 import com.example.smartcare.ui.screen.HomeScreen
 import com.example.smartcare.ui.screen.HospitalDetailsScreen
 import com.example.smartcare.ui.screen.LoginScreen
+import com.example.smartcare.ui.screen.PaymentPage
 import com.example.smartcare.ui.screen.ProfileScreen
 import com.example.smartcare.ui.screen.RecordScreen
 import com.example.smartcare.ui.screen.SearchScreen
@@ -24,6 +25,7 @@ import com.example.smartcare.ui.screen.SplashScreen
 import com.example.smartcare.viewModel.AppointmentViewModel
 import com.example.smartcare.viewModel.MedicalRecordViewModel
 import com.example.smartcare.viewModel.ProfileViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
@@ -69,7 +71,9 @@ fun NavigateScreens(
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                onForgotPasswordClick = {})
+                onForgotPasswordClick = {},
+                profileViewModel
+                )
         }
         composable(
             route = OtherScreens.signup.route,
@@ -139,12 +143,19 @@ fun NavigateScreens(
                     navController.navigate(OtherScreens.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
+                    appointmentViewModel.deleteAllAppointments()
                 },
                 onSettings = {},
-                onEdit = {  }
+                onEdit = {  },
+                appointmentViewModel = appointmentViewModel
             )
+        }
+        composable(
+            OtherScreens.paymentScreen.route,
+            enterTransition = { fadeIn(animationSpec = tween(50)) },
+            exitTransition = { fadeOut(animationSpec = tween(0)) }
+        ) {
+            PaymentPage(navController)
         }
     }
 }
-
-

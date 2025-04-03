@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.smartcare.AppointmentDAO
 import com.example.smartcare.AppointmentLists
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
@@ -40,9 +41,6 @@ class AppointmentViewModel(private val dao: AppointmentDAO) : ViewModel() {
             dao.updateAppointmentStatus(id, isCompleted)
         }
     }
-    fun getAppointmentById(id: Int): Flow<AppointmentLists?> {
-        return dao.getAppointmentById(id)
-    }
     fun getCompletedAppointments(): Flow<List<AppointmentLists>> {
         return dao.getCompletedAppointments()
     }
@@ -54,5 +52,18 @@ class AppointmentViewModel(private val dao: AppointmentDAO) : ViewModel() {
     }
     fun getAppointmentsByStatusFlow(status: String): Flow<List<AppointmentLists>> {
         return dao.getAppointmentsByStatus(status)
+    }
+
+    fun insertAppointments(appointments: List<AppointmentLists>) {
+        viewModelScope.launch(Dispatchers.IO) {  // ✅ Background thread
+            dao.insertAppointments(appointments.toMutableList())
+        }
+    }
+
+
+    fun deleteAllAppointments(){
+        viewModelScope.launch {
+            dao.deleteAllAppointments()
+        }
     }
 }

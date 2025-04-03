@@ -51,6 +51,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.smartcare.R
+import com.example.smartcare.viewModel.AppointmentViewModel
 import com.example.smartcare.viewModel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,7 +61,8 @@ fun ProfileScreen(
     profileViewModel: ProfileViewModel,
     onLogout: () -> Unit,
     onEdit: () -> Unit,
-    onSettings: () -> Unit
+    onSettings: () -> Unit,
+    appointmentViewModel: AppointmentViewModel
 ) {
     val profile by profileViewModel.profile.observeAsState()
     val gradientColors = listOf(Color(0xFF7F81F1), Color(0xFFB473F3), Color(0xFFD467EC))
@@ -191,7 +193,10 @@ fun ProfileScreen(
 
                 // Logout Button
                 Button(
-                    onClick = onLogout,
+                    onClick = {
+                        onLogout()
+                        appointmentViewModel.deleteAllAppointments()
+                              },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),

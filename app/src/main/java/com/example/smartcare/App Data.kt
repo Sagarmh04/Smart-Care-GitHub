@@ -1,6 +1,7 @@
 package com.example.smartcare
 
 import android.content.Context
+import android.os.Parcelable
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -15,6 +16,7 @@ import androidx.room.Query
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import kotlinx.coroutines.flow.Flow
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -58,6 +60,7 @@ interface ProfileDAO {
     fun checkLoginStatus(): LiveData<Boolean> // 🔹 Now suspend
 }
 
+@Parcelize
 @Entity
 data class AppointmentLists(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
@@ -69,10 +72,12 @@ data class AppointmentLists(
     val status: String,
     val isCompleted: Boolean = false,
     val hospitalDataIndex: Int,
+    val hospitalName: String,
     val hospitalIndex:Int,
     val doctorIndex:Int,
+    val cityName:String,
     val appointmentIndex:Int
-)
+) : Parcelable
 
 @Entity
 data class MedicalRecord(
@@ -110,6 +115,12 @@ interface AppointmentDAO {
 
     @Query("SELECT * FROM AppointmentLists WHERE status = :status")
     fun getAppointmentsByStatus(status: String): Flow<List<AppointmentLists>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAppointments(appointmentList: MutableList<AppointmentLists>)
+
+    @Query("DELETE FROM AppointmentLists")
+    suspend fun deleteAllAppointments()
 }
 
 @Dao

@@ -163,7 +163,7 @@ private fun DoctorCard(doctor: Doctor, onBookClick: () -> Unit) {
                     Icon(Icons.Default.Person, contentDescription = "person")
                     Spacer(Modifier.width(12.dp))
                     Text(
-                        text = "Dr. ${doctor.name}",
+                        text = " ${doctor.name}",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold
                     )

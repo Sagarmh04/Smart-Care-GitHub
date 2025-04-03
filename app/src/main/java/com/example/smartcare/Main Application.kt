@@ -2,6 +2,7 @@ package com.example.smartcare
 
 import android.app.Application
 import androidx.room.Room
+import com.google.firebase.FirebaseApp
 
 class MainApplication : Application() {
     companion object {
@@ -17,6 +18,7 @@ class MainApplication : Application() {
             ProfileDatabase.NAME
         ).fallbackToDestructiveMigration()
             .build()
+        FirebaseApp.initializeApp(this)
     }
 }
 

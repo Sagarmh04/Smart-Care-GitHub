@@ -29,11 +29,9 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.automirrored.filled.Logout
@@ -42,7 +40,6 @@ import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Height
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
@@ -58,15 +55,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
 import com.example.smartcare.ProfileData
 import com.example.smartcare.viewModel.ProfileViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -74,7 +71,8 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onSignupClick: () -> Unit,
-    onForgotPasswordClick: () -> Unit
+    onForgotPasswordClick: () -> Unit,
+    profileViewModel: ProfileViewModel
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -164,9 +162,11 @@ fun LoginScreen(
         // Login Button
         Button(
             onClick = {
-                if (email == "admin" && password == "password") {
-                    onLoginSuccess()
-                }
+                login(email, password, onLoginSuccess,
+                    onLoginFailure =  {email=""; password=""},
+                    profileViewModel
+                    )
+
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -211,6 +211,85 @@ fun LoginScreen(
         }
     }
 }
+
+private fun login(
+    email: String,
+    password: String,
+    onLoginSuccess: () -> Unit,
+    onLoginFailure: () -> Unit,
+    profileViewModel: ProfileViewModel
+) {
+    val auth = FirebaseAuth.getInstance()
+    auth.signInWithEmailAndPassword(email, password)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val user = auth.currentUser
+                if (user != null) {
+                    onLoginSuccess()
+                } else {
+                    onLoginFailure()
+                }
+            } else {
+                onLoginFailure()
+            }
+        }
+}
+
+
+fun signUp(
+    name: String,
+    email: String,
+    password: String,
+    onSignUpSuccess: () -> Unit,
+    onSignUpFailure: (Exception) -> Unit,
+    gender: String,
+    age: Int,
+    bloodGroup: String,
+    address: String,
+    contact: String,
+    height: Int,
+    weight: Int
+) {
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+
+    auth.createUserWithEmailAndPassword(email, password)
+        .addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val user = auth.currentUser
+                if (user != null) {
+                    val userId = user.uid
+                    val profileData = mapOf(
+                        "name" to name,
+                        "email" to email,
+                        "age" to age,
+                        "gender" to gender,
+                        "height" to height,
+                        "weight" to weight,
+                        "bloodGroup" to bloodGroup,
+                        "address" to address,
+                        "contact" to contact,
+                        "profilePic" to ""
+                    )
+
+                    // Push user profile data to Firestore
+                    db.collection("profiles").document(userId)
+                        .set(profileData)
+                        .addOnSuccessListener {
+                            onSignUpSuccess()
+                        }
+                        .addOnFailureListener { e ->
+                            onSignUpFailure(e)
+                        }
+                } else {
+                    onSignUpFailure(Exception("User is null after signup"))
+                }
+            } else {
+                onSignUpFailure(task.exception ?: Exception("Signup failed"))
+            }
+        }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -569,7 +648,19 @@ fun SignupScreen(
                                     isLoggedIn = true
                                 )
                             )
-                            onSignupSuccess()
+                            signUp(
+                                name = name,
+                                age = age.toIntOrNull() ?: 0,
+                                gender = gender,
+                                height = height.toIntOrNull() ?: 0,
+                                weight = weight.toIntOrNull() ?: 0,
+                                bloodGroup = bloodGroup,
+                                address = address,
+                                contact = phone,
+                                email = email,
+                                password = password,
+                                onSignUpSuccess=onSignupSuccess,
+                            onSignUpFailure={e->})
                         } finally {
                             isLoading = false
                         }
