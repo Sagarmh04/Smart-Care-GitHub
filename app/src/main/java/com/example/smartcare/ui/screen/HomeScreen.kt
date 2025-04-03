@@ -172,7 +172,6 @@ fun HomeScreen(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(Color.Red)
-                                .clickable { /* Handle Emergency Click */ }
                                 .padding(16.dp)
                                 .clickable { navController.navigate(OtherScreens.emergencyScreen) },
                             contentAlignment = Alignment.Center
