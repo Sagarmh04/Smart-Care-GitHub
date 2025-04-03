@@ -261,6 +261,7 @@ fun signUp(
                 if (user != null) {
                     val userId = user.uid
                     val profileData = mapOf(
+                        "id" to user.uid,
                         "name" to name,
                         "email" to email,
                         "age" to age,
@@ -646,7 +647,11 @@ fun SignupScreen(
                                     address = address,
                                     contact = phone,
                                     email = email,
-                                    isLoggedIn = true
+                                    isLoggedIn = true,
+                                    idOne = 1,
+                                    id = "",
+                                    profilePic = "",
+                                    isCompleted = true
                                 )
                             )
                             signUp(

@@ -20,9 +20,12 @@ import com.example.smartcare.ui.screen.SplashScreen
 import com.example.smartcare.database.viewModel.ProfileViewModel
 import com.example.smartcare.ui.screen.EmergencyRide
 import com.example.smartcare.ui.screen.FindARideScreen
+import com.example.smartcare.ui.screen.MessageChatScreen
 import com.example.smartcare.ui.screen.MessageScreen
 import com.example.smartcare.ui.screen.OfferARideScreen
 import com.example.smartcare.ui.screen.TrendingScreen
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
@@ -32,16 +35,18 @@ fun NavigateScreens(
     profile: ProfileData?,
     profileViewModel: ProfileViewModel,
     messageViewModel: MessageViewModel,
+    isLoggedIn: Boolean,
     onSplashComplete: () -> Unit,
     hideBottomScreen: () -> Unit,
 ) {
+    var user = Firebase.auth.currentUser
     NavHost(navController, startDestination = OtherScreens.SplashScreen.route) {
         composable(
             OtherScreens.SplashScreen.route,
             enterTransition = { fadeIn(animationSpec = tween(50)) },
             exitTransition = { fadeOut(animationSpec = tween(100)) }
         ) {
-            SplashScreen(navController, profileViewModel)
+            SplashScreen(navController, profileViewModel,isLoggedIn)
         }
         composable(
             route = BottomNavScreen.Home.route,
@@ -51,11 +56,11 @@ fun NavigateScreens(
             HomeScreen(innerPadding, navController, profileViewModel, onSplashComplete)
         }
         composable(
-            route = BottomNavScreen.Messsage.route,
+            route = BottomNavScreen.MessageScreen.route,
             enterTransition = { fadeIn(animationSpec = tween(50)) },
             exitTransition = { fadeOut(animationSpec = tween(0)) }
         ) {
-            MessageScreen(messageViewModel,"","")
+            MessageScreen(innerPadding,messageViewModel,navController,hideBottomScreen)
         }
         composable(
             OtherScreens.Login.route,
@@ -85,6 +90,9 @@ fun NavigateScreens(
             SignupScreen(
                 onSignupSuccess = {
                     profileViewModel.updateLoginState(true)
+                    if (user != null) {
+                        profileViewModel.updateId(user.uid)
+                    }
                     navController.popBackStack()
                     navController.navigate(BottomNavScreen.Home.route)
                 },
@@ -97,7 +105,7 @@ fun NavigateScreens(
             )
         }
         composable(
-            BottomNavScreen.Messsage.route,
+            BottomNavScreen.Profile.route,
             enterTransition = { fadeIn(animationSpec = tween(50)) },
             exitTransition = { fadeOut(animationSpec = tween(0)) }
         ) {
@@ -141,5 +149,14 @@ fun NavigateScreens(
         ) {
             OfferARideScreen()
         }
+        composable(
+            OtherScreens.MessageChatScreen.route,
+            enterTransition = { fadeIn(animationSpec = tween(50)) },
+            exitTransition = { fadeOut(animationSpec = tween(0)) }
+        ) {
+            if (user != null) {
+                MessageChatScreen(navController,messageViewModel, user.uid, hideBottomScreen)
+            }
+        }
+        }
     }
-}

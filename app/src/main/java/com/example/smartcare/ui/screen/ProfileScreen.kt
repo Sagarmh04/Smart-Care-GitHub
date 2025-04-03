@@ -38,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -51,6 +52,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.smartcare.R
+import com.example.smartcare.database.entity.ProfileData
 import com.example.smartcare.database.viewModel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,7 +64,23 @@ fun ProfileScreen(
     onEdit: () -> Unit,
     onSettings: () -> Unit
 ) {
-    val profile by profileViewModel.profile.observeAsState()
+    val profile = profileViewModel.profile.collectAsState( ProfileData(
+        idOne = 1,
+        id = "TODO",
+        name = "TODO()",
+        age = 0,
+        gender = "TODO()",
+        height = 9,
+        weight = 2,
+        bloodGroup = "TODO()",
+        address = "TODO()",
+        contact = "TODO()",
+        email = "TODO()",
+        profilePic = "TODO()",
+        isCompleted = false,
+        isLoggedIn = false
+    )
+    ).value
     val gradientColors = listOf(Color(0xFF7F81F1), Color(0xFFB473F3), Color(0xFFD467EC))
     val accentColor = Color(0xFF6366F1)
 

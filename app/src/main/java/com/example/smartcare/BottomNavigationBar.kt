@@ -16,18 +16,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.smartcare.ui.theme.white
 
 @Composable
 fun BottomNavigationBar(navController: NavHostController, modifier: Modifier = Modifier) {
     val screens = listOf(
         BottomNavScreen.Home,
-        BottomNavScreen.Search
+        BottomNavScreen.Profile,
+        BottomNavScreen.MessageScreen
     )
 
     BottomNavigation(
