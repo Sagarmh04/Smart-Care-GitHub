@@ -6,26 +6,19 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.smartcare.ui.screen.AppointmentBookingScreen
+import com.example.smartcare.database.entity.ProfileData
+import com.example.smartcare.database.viewModel.MessageViewModel
 import com.example.smartcare.ui.screen.HomeScreen
-import com.example.smartcare.ui.screen.HospitalDetailsScreen
 import com.example.smartcare.ui.screen.LoginScreen
-import com.example.smartcare.ui.screen.PaymentPage
 import com.example.smartcare.ui.screen.ProfileScreen
-import com.example.smartcare.ui.screen.RecordScreen
-import com.example.smartcare.ui.screen.SearchScreen
 import com.example.smartcare.ui.screen.SignupScreen
 import com.example.smartcare.ui.screen.SplashScreen
-import com.example.smartcare.viewModel.AppointmentViewModel
-import com.example.smartcare.viewModel.MedicalRecordViewModel
-import com.example.smartcare.viewModel.ProfileViewModel
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.smartcare.database.viewModel.ProfileViewModel
+import com.example.smartcare.ui.screen.MessageScreen
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
@@ -34,9 +27,8 @@ fun NavigateScreens(
     navController: NavHostController,
     profile: ProfileData?,
     profileViewModel: ProfileViewModel,
+    messageViewModel: MessageViewModel,
     onSplashComplete: () -> Unit,
-    medicalViewModel: MedicalRecordViewModel,
-    appointmentViewModel: AppointmentViewModel,
     hideBottomScreen: () -> Unit,
 ) {
     NavHost(navController, startDestination = OtherScreens.SplashScreen.route) {
@@ -52,9 +44,14 @@ fun NavigateScreens(
             enterTransition = { fadeIn(animationSpec = tween(50)) },
             exitTransition = { fadeOut(animationSpec = tween(0)) }
         ) {
-            HomeScreen(innerPadding, navController, profileViewModel, onSplashComplete,
-                appointmentViewModel
-            )
+            HomeScreen(innerPadding, navController, profileViewModel, onSplashComplete)
+        }
+        composable(
+            route = BottomNavScreen.Messsage.route,
+            enterTransition = { fadeIn(animationSpec = tween(50)) },
+            exitTransition = { fadeOut(animationSpec = tween(0)) }
+        ) {
+            MessageScreen(messageViewModel,"","")
         }
         composable(
             OtherScreens.Login.route,
@@ -64,6 +61,7 @@ fun NavigateScreens(
             LoginScreen(onLoginSuccess = {
                 profileViewModel.updateLoginState(true)
                 navController.popBackStack()
+                onSplashComplete()
                 navController.navigate(BottomNavScreen.Home.route)
             },
                 onSignupClick = {
@@ -95,44 +93,7 @@ fun NavigateScreens(
             )
         }
         composable(
-            route = OtherScreens.bookingScreen.route
-        ){
-            AppointmentBookingScreen(
-                navController = navController,
-                appointmentViewModel = appointmentViewModel,
-                hideBottomScreen,
-                modifier = Modifier.padding(innerPadding)
-                )
-        }
-        composable(
-            BottomNavScreen.Search.route,
-            enterTransition = { fadeIn(animationSpec = tween(50)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
-            SearchScreen(
-                modifier = Modifier.padding(innerPadding),
-                onBack = {},
-                navController = navController,
-                hideBottomScreen = onSplashComplete
-            )
-        }
-        // Add to your navigation graph
-        composable(
-            route = "hospitalDetails"
-        ) {
-            HospitalDetailsScreen(
-                navController,
-                hideBottomScreen = hideBottomScreen)
-        }
-        composable(
-            BottomNavScreen.Records.route,
-            enterTransition = { fadeIn(animationSpec = tween(50)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
-            RecordScreen(innerPadding)
-        }
-        composable(
-            BottomNavScreen.Profile.route,
+            BottomNavScreen.Messsage.route,
             enterTransition = { fadeIn(animationSpec = tween(50)) },
             exitTransition = { fadeOut(animationSpec = tween(0)) }
         ) {
@@ -143,19 +104,10 @@ fun NavigateScreens(
                     navController.navigate(OtherScreens.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
-                    appointmentViewModel.deleteAllAppointments()
                 },
                 onSettings = {},
-                onEdit = {  },
-                appointmentViewModel = appointmentViewModel
+                onEdit = {  }
             )
-        }
-        composable(
-            OtherScreens.paymentScreen.route,
-            enterTransition = { fadeIn(animationSpec = tween(50)) },
-            exitTransition = { fadeOut(animationSpec = tween(0)) }
-        ) {
-            PaymentPage(navController)
         }
     }
 }

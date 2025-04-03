@@ -9,7 +9,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
@@ -24,13 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
+import com.example.smartcare.database.entity.Message
+import com.example.smartcare.database.viewModel.MessageViewModel
+import com.example.smartcare.database.viewModel.MessageViewModelFactory
 import com.example.smartcare.ui.theme.white
-import com.example.smartcare.viewModel.AppointmentViewModel
-import com.example.smartcare.viewModel.AppointmentViewModelFactory
-import com.example.smartcare.viewModel.MedicalRecordViewModel
-import com.example.smartcare.viewModel.MedicalRecordViewModelFactory
-import com.example.smartcare.viewModel.ProfileViewModel
-import com.example.smartcare.viewModel.ProfileViewModelFactory
+import com.example.smartcare.database.viewModel.ProfileViewModel
+import com.example.smartcare.database.viewModel.ProfileViewModelFactory
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.firebase.FirebaseApp
 
@@ -41,27 +39,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         FirebaseApp.initializeApp(this)
         val profileDao = MainApplication.profileDatabase.profileDao()
-        val medicalDao = MainApplication.profileDatabase.medicalRecordDao()
-        val appointmentDao = MainApplication.profileDatabase.appointmentDao()
+        val messageDao = MainApplication.profileDatabase.messageDao()
 
 // Profile ViewModel
         val profileFactory = ProfileViewModelFactory(profileDao)
         val profileViewModel = ViewModelProvider(this, profileFactory)[ProfileViewModel::class.java]
+        val messageFactory = MessageViewModelFactory(messageDao)
+        val messageViewModel = ViewModelProvider(this, messageFactory)[MessageViewModel::class.java]
 
-// Medical Record ViewModel
-        val medicalFactory = MedicalRecordViewModelFactory(medicalDao)
-        val medicalViewModel = ViewModelProvider(this, medicalFactory)[MedicalRecordViewModel::class.java]
-
-// Appointment ViewModel
-        val appointmentFactory = AppointmentViewModelFactory(appointmentDao)
-        val appointmentViewModel = ViewModelProvider(this, appointmentFactory)[AppointmentViewModel::class.java]
 
         enableEdgeToEdge()
         setContent {
             var showBottomBar by remember { mutableStateOf(false) }
             val navController = rememberNavController()
             val systemUiController = rememberSystemUiController()
-            val isDarkTheme = isSystemInDarkTheme()
 
             SideEffect {
                 systemUiController.setStatusBarColor(
@@ -98,10 +89,9 @@ class MainActivity : ComponentActivity() {
                             innerPadding,
                             navController,
                             profile, profileViewModel,
+                            messageViewModel,
                             onSplashComplete = { showBottomBar = true },
-                            hideBottomScreen = { showBottomBar = false },
-                            medicalViewModel = medicalViewModel,
-                            appointmentViewModel =appointmentViewModel,
+                            hideBottomScreen = { showBottomBar = false }
                         )
                     }
                 }

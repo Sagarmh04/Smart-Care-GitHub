@@ -60,8 +60,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
-import com.example.smartcare.ProfileData
-import com.example.smartcare.viewModel.ProfileViewModel
+import com.example.smartcare.database.entity.ProfileData
+import com.example.smartcare.database.viewModel.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
@@ -226,6 +226,7 @@ private fun login(
                 val user = auth.currentUser
                 if (user != null) {
                     onLoginSuccess()
+                    profileViewModel.updateLoginState(true)
                 } else {
                     onLoginFailure()
                 }

@@ -27,9 +27,7 @@ import com.example.smartcare.ui.theme.white
 fun BottomNavigationBar(navController: NavHostController, modifier: Modifier = Modifier) {
     val screens = listOf(
         BottomNavScreen.Home,
-        BottomNavScreen.Search,
-        BottomNavScreen.Records,
-        BottomNavScreen.Profile
+        BottomNavScreen.Search
     )
 
     BottomNavigation(

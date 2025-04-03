@@ -11,7 +11,7 @@ sealed class BottomNavScreen(val route: String, val title: String, val icon: Ima
     object Home : BottomNavScreen("home", "Home", Icons.Default.Home )
     object Search : BottomNavScreen("search", "Search", Icons.Default.Search)
     object Records : BottomNavScreen("records", "Records", Icons.Default.FileCopy)
-    object Profile : BottomNavScreen("profile", "Profile", Icons.Default.AccountCircle)
+    object Messsage : BottomNavScreen("profile", "Profile", Icons.Default.AccountCircle)
 }
 
 sealed class OtherScreens(val route: String, val title: String, val icon: Int = R.drawable.home_unselected) {

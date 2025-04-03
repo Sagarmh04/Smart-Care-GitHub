@@ -1,22 +1,7 @@
 package com.example.smartcare.ui.screen
 
 import AppTheme
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.rememberTransition
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,76 +18,39 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.EventAvailable
-import androidx.compose.material.icons.filled.EventBusy
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.MedicalServices
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.smartcare.AppointmentLists
 import com.example.smartcare.BottomNavScreen
-import com.example.smartcare.Hospitals.allHospitalData
-import com.example.smartcare.R
 import com.example.smartcare.ui.theme.black
 import com.example.smartcare.ui.theme.skin
 import com.example.smartcare.ui.theme.transparent
 import com.example.smartcare.ui.theme.white
-import com.example.smartcare.viewModel.AppointmentViewModel
-import com.example.smartcare.viewModel.ProfileViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.smartcare.database.viewModel.ProfileViewModel
 import kotlinx.coroutines.launch
 
 
@@ -113,22 +61,20 @@ fun HomeScreen(
     navController: NavHostController,
     profileViewModel: ProfileViewModel,
     onSplashComplete: () -> Unit,
-    appointmentViewModel: AppointmentViewModel,
 ) {
-    LaunchedEffect(Unit) {
-        val auth = FirebaseAuth.getInstance()
-        val user = auth.currentUser
-        Log.d("FirestoreDebug", "Firebase Auth UID: ${user?.uid}")
-
-        if (user != null) {
-            fetchAppointmentsAndStore(
-                userId = user.uid,
-                appointmentViewModel = appointmentViewModel,
-                onFailure = { e -> Log.e("FirestoreDebug", "Failed to fetch appointments", e) }
-            )
-        }
-        onSplashComplete()
-    }
+//    LaunchedEffect(Unit) {
+//        val auth = FirebaseAuth.getInstance()
+//        val user = auth.currentUser
+//        Log.d("FirestoreDebug", "Firebase Auth UID: ${user?.uid}")
+//
+//        if (user != null) {
+//            fetchAppointmentsAndStore(
+//                userId = user.uid,
+//                onFailure = { e -> Log.e("FirestoreDebug", "Failed to fetch appointments", e) }
+//            )
+//        }
+//        onSplashComplete()
+//    }
 
         val isLoggedIn = profileViewModel.isLoggedIn.observeAsState(initial = null)
         when(isLoggedIn.value) {
@@ -262,9 +208,9 @@ fun HomeScreen(
                                         state = pagerState
                                     ) { page ->
                                         when (page) {
-                                            0 -> PendingAppointmentsScreen(appointmentViewModel)
+                                            0 -> PendingAppointmentsScreen()
 
-                                            1 -> CompletedAppointmentsScreen(appointmentViewModel)
+                                            1 -> CompletedAppointmentsScreen()
                                         }
                                     }
                                 }
@@ -279,722 +225,18 @@ fun HomeScreen(
         }
     }
 
+@Composable
+fun CompletedAppointmentsScreen() {
+    Box(modifier = Modifier.fillMaxWidth()){
+        Text("hwfu7i")
+    }
+}
+
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun PendingAppointmentsScreen(appointmentViewModel: AppointmentViewModel  ) {
-    val pendingAppointments by appointmentViewModel.getPendingAppointments().collectAsState(initial = emptyList())
-    val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-    val auth = FirebaseAuth.getInstance()
-    val user = auth.currentUser
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (pendingAppointments.isEmpty()) {
-            EmptyStateMessage("No pending appointments", "Schedule a new appointment to get started")
-        } else {
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(
-                    items = pendingAppointments,
-                    key = { it.id }
-                ) { appointment ->
-                    AppointmentCard(
-                        appointment = appointment,
-                        onCancel = {
-                            coroutineScope.launch {
-                                appointmentViewModel.cancelAppointment(appointment.id)
-                                if (user != null) {
-                                    val appointmentId = "abc123"  // Replace with the actual Firestore appointment ID
-
-                                    deleteAppointmentFromFirestore(
-                                        userId = user.uid,
-                                        appointmentId = appointmentId,
-                                        onSuccess = {
-                                        },
-                                        onFailure = { e ->
-                                        }
-                                    )
-                                }
-                            }
-                        },
-                        onComplete = {
-                            coroutineScope.launch {
-                                appointmentViewModel.updateAppointmentStatus(appointment.id, true)
-                            }
-                        }
-                    )
-                }
-            }
-            Spacer(Modifier.height(55.dp))
-        }
+fun PendingAppointmentsScreen(  ) {
+    Box(modifier = Modifier.fillMaxWidth()){
+        Text("hwfu7i")
     }
 }
-
-fun fetchAppointmentsAndStore(
-    userId: String,
-    appointmentViewModel: AppointmentViewModel,
-    onFailure: (Exception) -> Unit
-) {
-    val db = FirebaseFirestore.getInstance()
-
-    Log.d("FirestoreDebug", "Fetching appointments for userId: $userId")
-
-    db.collection("users").document(userId).collection("appointments")
-        .get()
-        .addOnSuccessListener { result ->
-            Log.d("FirestoreDebug", "Fetched ${result.documents.size} appointments")
-
-            val appointments = result.documents.mapNotNull { doc ->
-                try {
-                    val id = doc.id.hashCode()  // Ensure unique ID in RoomDB
-                    val doctorName = doc.getString("doctorName") ?: ""
-                    val doctorImageUrl = doc.getString("doctorImageUrl") ?: ""
-                    val date = doc.getString("date") ?: ""
-                    val time = doc.getString("time") ?: ""
-                    val reason = doc.getString("reason") ?: ""
-                    val status = doc.getString("status") ?: ""
-                    val isCompleted = doc.getBoolean("isCompleted") ?: false
-                    val hospitalDataIndex = doc.getLong("hospitalDataIndex")?.toInt() ?: 0
-                    val hospitalIndex = doc.getLong("hospitalIndex")?.toInt() ?: 0
-                    val doctorIndex = doc.getLong("doctorIndex")?.toInt() ?: 0
-                    val appointmentIndex = doc.getLong("appointmentIndex")?.toInt() ?: 0
-
-                    Log.d("FirestoreDebug", "Parsed appointment: Doctor: $doctorName, Date: $date")
-
-                    AppointmentLists(
-                        id = id,
-                        doctorName = doctorName,
-                        doctorImageUrl = doctorImageUrl,
-                        date = date,
-                        time = time,
-                        reason = reason,
-                        status = status,
-                        isCompleted = isCompleted,
-                        hospitalDataIndex = hospitalDataIndex,
-                        hospitalIndex = hospitalIndex,
-                        doctorIndex = doctorIndex,
-                        appointmentIndex = appointmentIndex,
-                        hospitalName = allHospitalData[hospitalDataIndex].hospitals[hospitalIndex].name,
-                        cityName = allHospitalData[hospitalDataIndex].cityName
-                    )
-                } catch (e: Exception) {
-                    Log.e("FirestoreDebug", "Error parsing appointment: ${doc.id}", e)
-                    null
-                }
-            }
-
-            Log.d("FirestoreDebug", "Successfully parsed ${appointments.size} appointments")
-
-            // 🔹 Store Appointments in RoomDB
-            appointmentViewModel.insertAppointments(appointments)
-        }
-        .addOnFailureListener { e ->
-            Log.e("FirestoreDebug", "Failed to fetch appointments", e)
-            onFailure(e)
-        }
-}
-
-
-
-
-fun deleteAppointmentFromFirestore(
-    userId: String,
-    appointmentId: String,
-    onSuccess: () -> Unit,
-    onFailure: (Exception) -> Unit
-) {
-    val db = FirebaseFirestore.getInstance()
-
-    db.collection("users").document(userId)
-        .collection("appointments").document(appointmentId)
-        .delete()
-        .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener { e -> onFailure(e) }
-}
-
-@Composable
-fun CompletedAppointmentsScreen(appointmentViewModel: AppointmentViewModel){
-    val completedAppointments by appointmentViewModel.getCompletedAppointments().collectAsState(initial = emptyList())
-    val listState = rememberLazyListState()
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (completedAppointments.isEmpty()) {
-            EmptyStateMessage("No completed appointments", "Your completed appointments will appear here")
-        } else {
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(
-                    items = completedAppointments,
-                    key = { it.id }
-                ) { appointment ->
-                    CompletedAppointmentCard(appointment = appointment)
-                }
-            }
-            Spacer(Modifier.height(55.dp))
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
-@Composable
-fun AppointmentCard(
-    appointment: AppointmentLists,
-    onCancel: () -> Unit,
-    onComplete: () -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val transitionState = remember {
-        MutableTransitionState(false).apply {
-            targetState = true
-        }
-    }
-
-    val transition = rememberTransition(transitionState, label = "cardTransition")
-    val cardScale by transition.animateFloat(
-        label = "cardScale",
-        transitionSpec = { tween(durationMillis = 300) }
-    ) { state ->
-        if (state) 1f else 0.95f
-    }
-
-    // Status color mapping
-    val statusColor = when (appointment.status) {
-        "Confirmed" -> MaterialTheme.colorScheme.primary
-        "Pending" -> MaterialTheme.colorScheme.tertiary
-        else -> MaterialTheme.colorScheme.error
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .scale(cardScale)
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            statusColor.copy(alpha = 0.1f),
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.05f)
-                        )
-                    )
-                )
-        ) {
-            // Status badge
-            Surface(
-                shape = RoundedCornerShape(topEnd = 20.dp, bottomStart = 20.dp),
-                color = statusColor,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = when (appointment.status) {
-                            "Confirmed" -> Icons.Default.EventAvailable
-                            "Pending" -> Icons.Default.Schedule
-                            else -> Icons.Default.ErrorOutline
-                        },
-                        contentDescription = "Status",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = appointment.status,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                // Doctor info section
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Doctor Image with border
-                    Box(
-                        modifier = Modifier
-                            .size(70.dp)
-                            .border(
-                                width = 2.dp,
-                                color = statusColor,
-                                shape = CircleShape
-                            )
-                            .padding(2.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.default_profile_screen),
-                            contentDescription = "Doctor ${appointment.doctorName}",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    // Doctor Info
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = " ${appointment.doctorName}",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Date and time with decorative elements
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
-                            ),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.CalendarToday,
-                                        contentDescription = "Date",
-                                        modifier = Modifier.size(18.dp),
-                                        tint = statusColor
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = appointment.date,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .height(20.dp)
-                                        .width(1.dp)
-                                        .background(MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.3f))
-                                )
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.AccessTime,
-                                        contentDescription = "Time",
-                                        modifier = Modifier.size(18.dp),
-                                        tint = statusColor
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = appointment.time,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Divider with gradient
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    statusColor.copy(alpha = 0.1f),
-                                    statusColor.copy(alpha = 0.5f),
-                                    statusColor.copy(alpha = 0.1f)
-                                )
-                            )
-                        )
-                )
-Spacer(Modifier.height(6.dp))
-
-                // Action buttons with enhanced design
-                OutlinedButton(
-                    onClick = onCancel,
-                    modifier = Modifier.width(250.dp).height(50.dp).padding(6.dp).align(Alignment.CenterHorizontally),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    ),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Cancel,
-                        contentDescription = "Cancel"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Cancel",
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-
-@Composable
-fun CompletedAppointmentCard(appointment: AppointmentLists) {
-    var expanded by remember { mutableStateOf(false) }
-    val transitionState = remember {
-        MutableTransitionState(false).apply {
-            targetState = true
-        }
-    }
-
-    val transition = rememberTransition(transitionState, label = "completedCardTransition")
-    val cardScale by transition.animateFloat(
-        label = "cardScale",
-        transitionSpec = { tween(durationMillis = 300) }
-    ) { state ->
-        if (state) 1f else 0.95f
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .scale(cardScale)
-            .animateContentSize(
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioMediumBouncy,
-                    stiffness = Spring.StiffnessLow
-                )
-            ),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.05f)
-                        )
-                    )
-                )
-        ) {
-            // Completed badge
-            Surface(
-                shape = RoundedCornerShape(topEnd = 20.dp, bottomStart = 20.dp),
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Completed",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Completed",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                // Doctor info section
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Doctor Image with border
-                    Box(
-                        modifier = Modifier
-                            .size(70.dp)
-                            .border(
-                                width = 2.dp,
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = CircleShape
-                            )
-                            .padding(2.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(R.drawable.default_profile_screen),
-                            contentDescription = "Doctor ${appointment.doctorName}",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    // Doctor Info
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text(
-                            text = "Dr. ${appointment.doctorName}",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Date and time with decorative elements
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.7f)
-                            ),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceEvenly
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.CalendarToday,
-                                        contentDescription = "Date",
-                                        modifier = Modifier.size(18.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = appointment.date,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .height(20.dp)
-                                        .width(1.dp)
-                                        .background(MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.3f))
-                                )
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.AccessTime,
-                                        contentDescription = "Time",
-                                        modifier = Modifier.size(18.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = appointment.time,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Divider with gradient
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                                )
-                            )
-                        )
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Reason section with animation
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                        .clickable { expanded = !expanded }
-                        .padding(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.MedicalServices,
-                                contentDescription = "Reason",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Reason for visit",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-
-                        IconButton(
-                            onClick = { expanded = !expanded },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = if (expanded) "Show less" else "Show more",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-
-                    AnimatedVisibility(
-                        visible = expanded,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut()
-                    ) {
-                        Column {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = appointment.reason,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-
-                    if (!expanded) {
-                        Text(
-                            text = appointment.reason,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-@Composable
-fun EmptyStateMessage(title: String, subtitle: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.EventBusy,
-            contentDescription = "No appointments",
-            modifier = Modifier.size(80.dp),
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-

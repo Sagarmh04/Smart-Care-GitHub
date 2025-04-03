@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.smartcare.R
 import com.example.smartcare.ui.component.BreathingAddIcon
-import com.example.smartcare.viewModel.ProfileViewModel
+import com.example.smartcare.database.viewModel.ProfileViewModel
 import kotlinx.coroutines.delay
 
 @Composable

@@ -1,8 +1,8 @@
-package com.example.smartcare.viewModel
+package com.example.smartcare.database.viewModel
 
 import androidx.lifecycle.*
-import com.example.smartcare.ProfileDAO
-import com.example.smartcare.ProfileData
+import com.example.smartcare.database.dao.ProfileDAO
+import com.example.smartcare.database.entity.ProfileData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
