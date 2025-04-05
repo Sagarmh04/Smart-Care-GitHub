@@ -58,7 +58,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.media3.common.ktx)
     implementation(libs.kotlinx.serialization.json)
-
+    implementation("com.google.code.gson:gson:2.10.1") // Latest Gson version
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")

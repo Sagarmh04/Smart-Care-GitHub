@@ -8,11 +8,16 @@ data class Ride(
     @PrimaryKey var id: String,
     var driverId: String,
     var passengerId: String,
-    var pickupLocation: String,
-    var destination: String,
+    var noOfPassenger: Int,
+
+    var pickupLocationName: String,
+
+    var destinationName: String,
+
+    var middleStops: List<Stop>,
+
     var date: String,
     var time: String,
-    var middleStops : List<String>,
     var status: String,
     var price: Double,
     var rating: Double,
@@ -20,4 +25,9 @@ data class Ride(
     var paymentMethod: String,
     var paymentStatus: String,
     var rideType: String,
+)
+data class Stop(
+    val stopName: String,
+    val lat: Double,
+    val lng: Double
 )

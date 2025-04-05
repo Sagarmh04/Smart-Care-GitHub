@@ -115,13 +115,16 @@ fun NavigateScreens(
             )
         }
         composable(Destination.Home.route) {
-            HomeScreen(
-                navController = navController,
-                rideViewModel = rideViewModel,
-                innerPadding,
-                chatUserViewModel,
-                db
-            )
+            if (user != null) {
+                HomeScreen(
+                    navController = navController,
+                    rideViewModel = rideViewModel,
+                    innerPadding,
+                    chatUserViewModel,
+                    db,
+                    user.uid
+                )
+            }
         }
         composable(Destination.Messages.route) {
             MessageScreen(
@@ -135,14 +138,19 @@ fun NavigateScreens(
         composable(Destination.OfferRide.route) {
             OfferRideScreen(
                 navController = navController,
-                rideViewModel = rideViewModel
+                rideViewModel = rideViewModel,
+                auth
             )
         }
         composable(Destination.FindRide.route) {
-            FindRideScreen(
-                navController = navController,
-                rideViewModel = rideViewModel
-            )
+            if (user != null) {
+                FindRideScreen(
+                    navController = navController,
+                    rideViewModel = rideViewModel,
+                    user.uid,
+                    rideViewModel
+                )
+            }
         }
         composable(
             route = "${Destination.Chat.route}/{userId}",

@@ -12,15 +12,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.smartcare.database.RideDTO
+import com.example.smartcare.database.StopDTO
 import com.example.smartcare.database.entity.Ride
+import com.example.smartcare.database.entity.Stop
 import com.example.smartcare.database.viewModel.RideViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OfferRideScreen(
     navController: NavController,
-    rideViewModel: RideViewModel
+    rideViewModel: RideViewModel,
+    auth: FirebaseAuth
 ) {
     val scrollState = rememberScrollState()
 
@@ -248,29 +254,31 @@ fun OfferRideScreen(
             Button(
                 onClick = {
                     // Create a new ride and save it
-                    val newRide = Ride(
-                        id = UUID.randomUUID().toString(),
-                        driverId = "current_user_id", // Replace with actual user ID
-                        passengerId = "",
-                        pickupLocation = pickupLocation,
-                        destination = destination,
-                        date = date,
-                        time = time,
-                        middleStops = emptyList(),
-                        status = "Available",
-                        price = price.toDoubleOrNull() ?: 0.0,
-                        rating = 0.0,
-                        review = "",
-                        paymentMethod = paymentMethod,
-                        paymentStatus = "Pending",
-                        rideType = rideType
-                    )
+                    val newRide = auth.currentUser?.let {
+                        Ride(
+                            id = UUID.randomUUID().toString(),
+                            driverId = it.uid, // Replace with actual user ID
+                            passengerId = "emptyList()",
+                            pickupLocationName = pickupLocation,
+                            destinationName = destination,
+                            date = date,
+                            time = time,
+                            middleStops = emptyList<Stop>(),
+                            status = "Available",
+                            price = price.toDoubleOrNull() ?: 0.0,
+                            rating = 0.0,
+                            review = "",
+                            paymentMethod = paymentMethod,
+                            paymentStatus = "Pending",
+                            rideType = rideType,
+                            noOfPassenger = 2
+                        )
+                    }
 
-                    rideViewModel.insertRide(newRide)
-                    rideViewModel.saveRide(newRide,
-                        onSuccess = { },
-                        onFailure = { }
-                    )
+                    if (newRide != null) {
+                        rideViewModel.insertRide(newRide)
+                        uploadRideToFirestore(newRide)
+                    }
                     navController.navigateUp()
                 },
                 modifier = Modifier
@@ -285,3 +293,99 @@ fun OfferRideScreen(
     }
 }
 
+fun Ride.toDTO(): RideDTO {
+    return RideDTO(
+        id = id,
+        driverId = driverId,
+        passengerId = passengerId,
+        noOfPassenger = noOfPassenger,
+        pickupLocationName = pickupLocationName,
+        destinationName = destinationName,
+        middleStops = middleStops.map { it.toDTO() },
+        date = date,
+        time = time,
+        status = status,
+        price = price,
+        rating = rating,
+        review = review,
+        paymentMethod = paymentMethod,
+        paymentStatus = paymentStatus,
+        rideType = rideType
+    )
+}
+
+fun Stop.toDTO(): StopDTO {
+    return StopDTO(
+        stopName = stopName,
+        lat = lat,
+        lng = lng
+    )
+}
+fun uploadRideToFirestore(ride: Ride) {
+    val db = FirebaseFirestore.getInstance()
+    val rideDTO = ride.toDTO()
+
+    db.collection("rides")
+        .document(rideDTO.id)
+        .set(rideDTO)
+        .addOnSuccessListener {
+//            Log.d("Firestore", "Ride uploaded successfully.")
+        }
+        .addOnFailureListener { e ->
+//            Log.e("Firestore", "Error uploading ride", e)
+        }
+}
+
+data class RideDTOf(
+    val id: String = "",
+    val driverId: String = "",
+    val passengerId: String = "",
+    val noOfPassenger: Int = 0,
+    val pickupLocationName: String = "",
+    val destinationName: String = "",
+    val middleStops: List<StopDTO> = emptyList<StopDTO>(),
+    val date: String = "",
+    val time: String = "",
+    val status: String = "",
+    val price: Double = 0.0,
+    val rating: Double = 0.0,
+    val review: String = "",
+    val paymentMethod: String = "",
+    val paymentStatus: String = "",
+    val rideType: String = ""
+)
+
+data class StopDTO(
+    val stopName: String = "",
+    val lat: Double = 0.0,
+    val lng: Double = 0.0
+)
+
+fun RideDTOf.toEntity(): Ride {
+    return Ride(
+        id = id,
+        driverId = driverId,
+        passengerId = passengerId,
+        noOfPassenger = noOfPassenger,
+        pickupLocationName = pickupLocationName,
+        destinationName = destinationName,
+        middleStops = middleStops.map { it.toEntity() },
+        date = date,
+        time = time,
+        status = status,
+        price = price,
+        rating = rating,
+        review = review,
+        paymentMethod = paymentMethod,
+        paymentStatus = paymentStatus,
+        rideType = rideType
+    )
+}
+
+fun StopDTO.toEntity(): Stop {
+    return Stop(
+        stopName = stopName,
+        lat = lat,
+        lng = lng
+    )
+}

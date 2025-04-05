@@ -17,14 +17,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.smartcare.database.RideDTO
 import com.example.smartcare.database.entity.Ride
 import com.example.smartcare.database.viewModel.RideViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FindRideScreen(
     navController: NavController,
-    rideViewModel: RideViewModel
+    rideViewModel: RideViewModel,
+    uid: String,
+    rideViewModel1: RideViewModel
 ) {
     val scrollState = rememberScrollState()
 
@@ -50,13 +54,16 @@ fun FindRideScreen(
 
     // Get all rides and filter them
     val allRides by rideViewModel.allRides.observeAsState()
-    val filteredRides = remember(allRides, pickupLocation, destination, rideType) {
+    var filteredRides = remember(allRides, pickupLocation, destination, rideType) {
         allRides?.filter { ride ->
-            (pickupLocation.isEmpty() || ride.pickupLocation == pickupLocation) &&
-                    (destination.isEmpty() || ride.destination == destination) &&
+            (pickupLocation.isEmpty() || ride.pickupLocationName == pickupLocation) &&
+                    (destination.isEmpty() || ride.destinationName == destination) &&
                     (rideType == "Any" || ride.rideType == rideType) &&
                     ride.status == "Available"
         }
+    }
+    getAllRidesFromFirestore { rides->
+        filteredRides=rides
     }
 
     var showResults by remember { mutableStateOf(false) }
@@ -243,7 +250,7 @@ fun FindRideScreen(
                     )
 
                     if (filteredRides != null) {
-                        if (filteredRides.isEmpty()) {
+                        if (filteredRides!!.isEmpty()) {
                             // No rides found
                             Box(
                                 modifier = Modifier
@@ -264,16 +271,18 @@ fun FindRideScreen(
                                     .fillMaxWidth()
                                     .weight(1f)
                             ) {
-                                items(filteredRides) { ride ->
+                                items(filteredRides!!) { ride ->
                                     AvailableRideItem(
                                         ride = ride,
                                         onBookClick = {
                                             // Book the ride
                                             val updatedRide = ride.copy(
-                                                passengerId = "current_user_id", // Replace with actual user ID
+                                                passengerId = uid, // Replace with actual user ID
                                                 status = "Booked"
                                             )
                                             rideViewModel.updateRide(updatedRide)
+                                            updateRideInFirestore(ride=updatedRide,uid =uid, rideViewModel = rideViewModel)
+                                            syncRidesFromCloud(rideViewModel = rideViewModel1, uid = uid)
                                             navController.navigateUp()
                                         }
                                     )
@@ -295,6 +304,24 @@ fun FindRideScreen(
             }
         }
     }
+}
+fun updateRideInFirestore(ride: Ride, rideViewModel: RideViewModel,uid: String) {
+    val db = FirebaseFirestore.getInstance()
+    val rideDTO = ride.toDTO() // Reuse the toDTO() you already have
+
+    db.collection("rides")
+        .document(rideDTO.id)
+        .set(rideDTO) // Replace the entire ride document with updated fields
+        .addOnSuccessListener {
+            syncRidesFromCloud(
+                rideViewModel = rideViewModel,
+                uid = uid
+            )
+//            Log.d("Firestore", "Ride ${rideDTO.id} updated successfully.")
+        }
+        .addOnFailureListener { e ->
+//            Log.e("Firestore", "Error updating ride ${rideDTO.id}", e)
+        }
 }
 
 @Composable
@@ -318,7 +345,7 @@ fun AvailableRideItem(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "${ride.pickupLocation} → ${ride.destination}",
+                    text = "${ride.pickupLocationName} → ${ride.destinationName}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
@@ -360,5 +387,21 @@ fun AvailableRideItem(
             }
         }
     }
+}
+fun getAllRidesFromFirestore(onResult: (List<Ride>) -> Unit) {
+    val db = FirebaseFirestore.getInstance()
+
+    db.collection("rides")
+        .get()
+        .addOnSuccessListener { result ->
+            val rideList = result.mapNotNull { document ->
+                document.toObject(RideDTOf::class.java).toEntity() // Convert DTO to Room entity
+            }
+            onResult(rideList) // Return the list via callback
+        }
+        .addOnFailureListener { e ->
+//            Log.e("Firestore", "Error fetching rides", e)
+            onResult(emptyList()) // Return empty list if failure
+        }
 }
 

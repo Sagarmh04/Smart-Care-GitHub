@@ -35,6 +35,9 @@ import com.example.smartcare.database.entity.Ride
 import com.example.smartcare.database.viewModel.ChatUserViewModel
 import com.example.smartcare.database.viewModel.RideViewModel
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -43,11 +46,10 @@ fun HomeScreen(
     rideViewModel: RideViewModel,
     innerPadding: PaddingValues,
     chatUserViewModel: ChatUserViewModel,
-    db: FirebaseFirestore
+    db: FirebaseFirestore,
+    uid: String
 ) {
-
-    LaunchedEffect(Unit) {
-    rideViewModel.syncRidesFromCloud()}
+    syncRidesFromCloud(rideViewModel,uid)
     val pagerState = rememberPagerState(pageCount = { 2 })
 
     Column(
@@ -109,7 +111,7 @@ fun HomeContent(
                 )
         ) {
             Text(
-                text = "Campus Cruise",
+                text = "CampusCruze",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.primary,
@@ -147,13 +149,16 @@ fun HomeContent(
         }
 
         // Previous Rides Section
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "Previous Rides",
+            text = "Rides",
             fontSize = 20.sp,
+            fontFamily = FontFamily(Font(R.font.sans)),
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier
                 .align(Alignment.Start)
                 .padding(vertical = 8.dp)
+                .padding(start = 16.dp)
         )
 
         // List of previous rides
@@ -247,7 +252,7 @@ fun RideItem(ride: Ride, modifier: Modifier = Modifier) {
             Column {
                 // Pickup
                 Text(
-                    text = "From: ${ride.pickupLocation}",
+                    text = "From: ${ride.pickupLocationName}",
                     color = textSecondary,
                     fontSize = 13.sp,
                     maxLines = 1,
@@ -256,7 +261,7 @@ fun RideItem(ride: Ride, modifier: Modifier = Modifier) {
 
                 // Destination
                 Text(
-                    text = "To: ${ride.destination}",
+                    text = "To: ${ride.destinationName}",
                     color = textPrimary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -303,4 +308,27 @@ fun RideItem(ride: Ride, modifier: Modifier = Modifier) {
             }
         }
     }
+}
+fun syncRidesFromCloud(rideViewModel: RideViewModel, uid: String) {
+    val db = FirebaseFirestore.getInstance()
+
+    db.collection("rides")
+        .whereEqualTo("driverId", uid )
+        .get()
+        .addOnSuccessListener { result ->
+            CoroutineScope(Dispatchers.IO).launch {
+                for (document in result) {
+                    val rideDTO = document.toObject(RideDTOf::class.java)
+                    val existingRide = rideViewModel.getRideById(rideDTO.id)
+
+                    val ride = rideDTO.toEntity()
+
+                    rideViewModel.insertRide(ride)
+                }
+//                Log.d("Sync", "Rides sync completed.")
+            }
+        }
+        .addOnFailureListener { e ->
+//            Log.e("Sync", "Error fetching rides", e)
+        }
 }

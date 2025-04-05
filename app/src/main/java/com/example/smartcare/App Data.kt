@@ -14,10 +14,29 @@ import com.example.smartcare.database.entity.ChatUser
 import com.example.smartcare.database.entity.Message
 import com.example.smartcare.database.entity.ProfileData
 import com.example.smartcare.database.entity.Ride
+import com.example.smartcare.database.entity.Stop
+import com.google.common.reflect.TypeToken
+import com.google.gson.Gson
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+class GsonConverters {
+    private val gson = Gson()
 
+    // ✅ Convert List<Stop> to JSON String for storing in Room
+    @TypeConverter
+    fun fromStopList(stops: List<Stop>?): String {
+        return gson.toJson(stops)
+    }
+
+    // ✅ Convert JSON String back to List<Stop> when retrieving from Room
+    @TypeConverter
+    fun toStopList(stopsJson: String?): List<Stop> {
+        if (stopsJson.isNullOrEmpty()) return emptyList()
+        val type = object : TypeToken<List<Stop>>() {}.type
+        return gson.fromJson(stopsJson, type)
+    }
+}
 class Converters {
 
     @TypeConverter
@@ -32,7 +51,7 @@ class Converters {
 }
 
 @Database(entities = [ProfileData::class, Message::class, Ride::class, ChatUser::class], version = 1, exportSchema = false)
-@TypeConverters(Converters::class)
+@TypeConverters(Converters::class,GsonConverters::class)
 abstract class ProfileDatabase : RoomDatabase() {
 
     abstract fun profileDao(): ProfileDAO
