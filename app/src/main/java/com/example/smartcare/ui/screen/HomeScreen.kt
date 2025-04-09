@@ -23,6 +23,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,7 +50,7 @@ fun HomeScreen(
     db: FirebaseFirestore,
     uid: String
 ) {
-    syncRidesFromCloud(rideViewModel,uid)
+    syncRidesFromCloud(rideViewModel, uid)
     val pagerState = rememberPagerState(pageCount = { 2 })
 
     Column(
@@ -58,8 +59,6 @@ fun HomeScreen(
             .padding(8.dp)
             .padding(innerPadding)
     ) {
-
-        // Pager for Home and Messages screens
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize()
@@ -90,7 +89,6 @@ fun HomeContent(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // App Title
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -101,7 +99,7 @@ fun HomeContent(
                     spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
                 )
                 .background(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    color = Color(0xFF88CCFF),
                     shape = RoundedCornerShape(12.dp)
                 )
                 .border(
@@ -114,7 +112,7 @@ fun HomeContent(
                 text = "CampusCruze",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary,
+                color = Color(0xFF051459),
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(vertical = 20.dp, horizontal = 32.dp),
@@ -126,29 +124,26 @@ fun HomeContent(
             )
         }
 
-        // Ride Options
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 24.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
+
+                .padding(vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Offer a Ride Box
             RideOptionBox(
                 title = "Offer a Ride",
-                imageResId = R.drawable.img,
+                imageResId = R.drawable.blueoffer,
                 onClick = { navController.navigate(Destination.OfferRide.route) }
             )
 
-            // Find a Ride Box
             RideOptionBox(
                 title = "Find a Ride",
-                imageResId = R.drawable.img,
+                imageResId = R.drawable.bluefind,
                 onClick = { navController.navigate(Destination.FindRide.route) }
             )
         }
 
-        // Previous Rides Section
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "Rides",
@@ -161,14 +156,15 @@ fun HomeContent(
                 .padding(start = 16.dp)
         )
 
-        // List of previous rides
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(rides.orEmpty()) { ride ->
+            items(rides.orEmpty().take(2)) { ride ->
                 RideItem(ride = ride)
             }
         }
+
+
     }
 }
 
@@ -178,53 +174,58 @@ fun RideOptionBox(
     imageResId: Int,
     onClick: () -> Unit
 ) {
-    Card(
+    Box(
         modifier = Modifier
-            .size(150.dp)
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+            .fillMaxWidth()
+
+            .clip(RoundedCornerShape(12.dp))
+
+            .clickable(onClick = onClick)
+
+
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = imageResId),
-                contentDescription = title,
+            Box(
                 modifier = Modifier
-                    .size(80.dp)
-                    .padding(bottom = 8.dp),
-                contentScale = ContentScale.Fit
-            )
+                    .size(220.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = imageResId),
+                    contentDescription = title,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.width(300.dp)
+                )
+            }
 
             Text(
                 text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.Center
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center,
+
+                color = Color.Black,
+
             )
         }
     }
 }
 
-
 @Composable
 fun RideItem(ride: Ride, modifier: Modifier = Modifier) {
-    // Custom color palette using analogous blues with accent
-    val cardColor = Color(0xFFF8FAFF)  // Very light blue background
-    val primaryBlue = Color(0xFF3A7BFF)  // Vibrant primary blue
-    val secondaryBlue = Color(0xFF5D9DFF)  // Lighter secondary blue
-    val accentGreen = Color(0xFF00C897)  // Complementary green accent
-    val textPrimary = Color(0xFF1A2B49)  // Dark blue for text
-    val textSecondary = Color(0xFF6B7B99)  // Grayish blue for secondary text
+    val cardColor = Color(0xFFF8FAFF)
+    val primaryBlue = Color(0xFF3A7BFF)
+    val secondaryBlue = Color(0xFF5D9DFF)
+    val accentGreen = Color(0xFF00C897)
+    val textPrimary = Color(0xFF1A2B49)
+    val textSecondary = Color(0xFF6B7B99)
 
-    // Status colors
     val statusColor = when (ride.status.lowercase()) {
         "completed" -> accentGreen
         "active" -> primaryBlue
@@ -232,25 +233,19 @@ fun RideItem(ride: Ride, modifier: Modifier = Modifier) {
         else -> secondaryBlue
     }
 
-    Card(
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = cardColor,
-            contentColor = textPrimary
-        )
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .background(cardColor, shape = RoundedCornerShape(10.dp))
+            .border(1.dp, color = Color.LightGray.copy(alpha = 0.2f), shape = RoundedCornerShape(10.dp))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp)
         ) {
-            // First row: Locations
             Column {
-                // Pickup
                 Text(
                     text = "From: ${ride.pickupLocationName}",
                     color = textSecondary,
@@ -259,7 +254,6 @@ fun RideItem(ride: Ride, modifier: Modifier = Modifier) {
                     overflow = TextOverflow.Ellipsis
                 )
 
-                // Destination
                 Text(
                     text = "To: ${ride.destinationName}",
                     color = textPrimary,
@@ -273,20 +267,17 @@ fun RideItem(ride: Ride, modifier: Modifier = Modifier) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Second row: Date/Time and Status
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Date and time
                 Text(
                     text = "${ride.date} • ${ride.time}",
                     color = textSecondary,
                     fontSize = 12.sp
                 )
 
-                // Status badge
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
@@ -309,26 +300,22 @@ fun RideItem(ride: Ride, modifier: Modifier = Modifier) {
         }
     }
 }
+
 fun syncRidesFromCloud(rideViewModel: RideViewModel, uid: String) {
     val db = FirebaseFirestore.getInstance()
 
     db.collection("rides")
-        .whereEqualTo("driverId", uid )
+        .whereEqualTo("driverId", uid)
         .get()
         .addOnSuccessListener { result ->
             CoroutineScope(Dispatchers.IO).launch {
                 for (document in result) {
                     val rideDTO = document.toObject(RideDTOf::class.java)
                     val existingRide = rideViewModel.getRideById(rideDTO.id)
-
                     val ride = rideDTO.toEntity()
-
                     rideViewModel.insertRide(ride)
                 }
-//                Log.d("Sync", "Rides sync completed.")
             }
         }
-        .addOnFailureListener { e ->
-//            Log.e("Sync", "Error fetching rides", e)
-        }
+        .addOnFailureListener { e -> }
 }

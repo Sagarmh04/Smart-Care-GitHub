@@ -1,26 +1,73 @@
 package com.example.smartcare.ui.screen
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.smartcare.database.RideDTO
 import com.example.smartcare.database.entity.Ride
 import com.example.smartcare.database.viewModel.RideViewModel
-import com.google.firebase.firestore.FirebaseFirestore
+import java.util.*
+
+@OptIn(ExperimentalMaterial3Api::class)
+
+@Composable
+fun AvailableRideItem(
+    ride: Ride,
+    onBookClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "${ride.pickupLocationName} ➝ ${ride.destinationName}",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text("Date: ${ride.date}", style = MaterialTheme.typography.bodyMedium)
+            Text("Time: ${ride.time}", style = MaterialTheme.typography.bodyMedium)
+            Text("Type: ${ride.rideType}", style = MaterialTheme.typography.bodyMedium)
+            Text("Seats Available: 6, style = MaterialTheme.typography.bodyMedium)")
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = onBookClick,
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Book Ride")
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,15 +78,16 @@ fun FindRideScreen(
     rideViewModel1: RideViewModel
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
-    // State variables for form fields
     var pickupLocation by remember { mutableStateOf("") }
     var destination by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
-    var timeRange by remember { mutableStateOf("") }
+    var time by remember { mutableStateOf("") }
     var rideType by remember { mutableStateOf("Any") }
+    var gender by remember { mutableStateOf("") }
+    var numSeats by remember { mutableStateOf("") }
 
-    // Predefined locations
     val locations = listOf(
         "Main Campus", "Library", "Student Center", "Engineering Building",
         "Science Complex", "Arts Center", "Sports Complex", "Downtown",
@@ -47,14 +95,8 @@ fun FindRideScreen(
         "Bus Terminal", "Train Station", "Shopping Mall", "Airport"
     )
 
-    // Dropdown menu states
-    var pickupExpanded by remember { mutableStateOf(false) }
-    var destinationExpanded by remember { mutableStateOf(false) }
-    var rideTypeExpanded by remember { mutableStateOf(false) }
-
-    // Get all rides and filter them
     val allRides by rideViewModel.allRides.observeAsState()
-    var filteredRides = remember(allRides, pickupLocation, destination, rideType) {
+    val filteredRides = remember(allRides, pickupLocation, destination, rideType) {
         allRides?.filter { ride ->
             (pickupLocation.isEmpty() || ride.pickupLocationName == pickupLocation) &&
                     (destination.isEmpty() || ride.destinationName == destination) &&
@@ -62,16 +104,18 @@ fun FindRideScreen(
                     ride.status == "Available"
         }
     }
-    getAllRidesFromFirestore { rides->
-        filteredRides=rides
-    }
 
+    var pickupExpanded by remember { mutableStateOf(false) }
+    var destinationExpanded by remember { mutableStateOf(false) }
+    var rideTypeExpanded by remember { mutableStateOf(false) }
+    var genderExpanded by remember { mutableStateOf(false) }
     var showResults by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Find a Ride") },
+
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -87,20 +131,16 @@ fun FindRideScreen(
                 .padding(16.dp)
         ) {
             if (!showResults) {
-                // Search Form
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Pickup Location Dropdown
                     ExposedDropdownMenuBox(
                         expanded = pickupExpanded,
                         onExpandedChange = { pickupExpanded = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                     ) {
                         OutlinedTextField(
                             value = pickupLocation,
@@ -109,11 +149,8 @@ fun FindRideScreen(
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = pickupExpanded)
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor()
+                            modifier = Modifier.fillMaxWidth().menuAnchor()
                         )
-
                         ExposedDropdownMenu(
                             expanded = pickupExpanded,
                             onDismissRequest = { pickupExpanded = false }
@@ -130,13 +167,10 @@ fun FindRideScreen(
                         }
                     }
 
-                    // Destination Dropdown
                     ExposedDropdownMenuBox(
                         expanded = destinationExpanded,
                         onExpandedChange = { destinationExpanded = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                     ) {
                         OutlinedTextField(
                             value = destination,
@@ -145,11 +179,8 @@ fun FindRideScreen(
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = destinationExpanded)
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor()
+                            modifier = Modifier.fillMaxWidth().menuAnchor()
                         )
-
                         ExposedDropdownMenu(
                             expanded = destinationExpanded,
                             onDismissRequest = { destinationExpanded = false }
@@ -166,36 +197,58 @@ fun FindRideScreen(
                         }
                     }
 
-                    // Date Field
                     OutlinedTextField(
                         value = date,
-                        onValueChange = { date = it },
-                        label = { Text("Date (DD/MM/YYYY)") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
+                        onValueChange = {},
+                        label = { Text("Date") },
                         trailingIcon = {
-                            Icon(Icons.Default.DateRange, contentDescription = "Select Date")
-                        }
+                            IconButton(onClick = {
+                                val calendar = Calendar.getInstance()
+                                DatePickerDialog(
+                                    context,
+                                    { _, year, month, dayOfMonth ->
+                                        date = "%02d/%02d/%04d".format(dayOfMonth, month + 1, year)
+                                    },
+                                    calendar.get(Calendar.YEAR),
+                                    calendar.get(Calendar.MONTH),
+                                    calendar.get(Calendar.DAY_OF_MONTH)
+                                ).show()
+                            }) {
+                                Icon(Icons.Default.DateRange, contentDescription = "Select Date")
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        readOnly = true
                     )
 
-                    // Time Range Field
                     OutlinedTextField(
-                        value = timeRange,
-                        onValueChange = { timeRange = it },
-                        label = { Text("Preferred Time Range (e.g., 14:00-16:00)") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp)
+                        value = time,
+                        onValueChange = {},
+                        label = { Text("Time") },
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                val calendar = Calendar.getInstance()
+                                TimePickerDialog(
+                                    context,
+                                    { _, hour, minute ->
+                                        time = "%02d:%02d".format(hour, minute)
+                                    },
+                                    calendar.get(Calendar.HOUR_OF_DAY),
+                                    calendar.get(Calendar.MINUTE),
+                                    true
+                                ).show()
+                            }) {
+                                Icon(Icons.Default.AccessTime, contentDescription = "Select Time")
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        readOnly = true
                     )
 
-                    // Ride Type Dropdown
                     ExposedDropdownMenuBox(
                         expanded = rideTypeExpanded,
                         onExpandedChange = { rideTypeExpanded = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 24.dp)
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                     ) {
                         OutlinedTextField(
                             value = rideType,
@@ -204,11 +257,8 @@ fun FindRideScreen(
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = rideTypeExpanded)
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor()
+                            modifier = Modifier.fillMaxWidth().menuAnchor()
                         )
-
                         ExposedDropdownMenu(
                             expanded = rideTypeExpanded,
                             onDismissRequest = { rideTypeExpanded = false }
@@ -225,23 +275,54 @@ fun FindRideScreen(
                         }
                     }
 
-                    // Search Button
+                    ExposedDropdownMenuBox(
+                        expanded = genderExpanded,
+                        onExpandedChange = { genderExpanded = it },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = gender,
+                            onValueChange = { gender = it },
+                            label = { Text("Gender") },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded)
+                            },
+                            modifier = Modifier.fillMaxWidth().menuAnchor()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = genderExpanded,
+                            onDismissRequest = { genderExpanded = false }
+                        ) {
+                            listOf("Male", "Female", "Other").forEach { g ->
+                                DropdownMenuItem(
+                                    text = { Text(g) },
+                                    onClick = {
+                                        gender = g
+                                        genderExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = numSeats,
+                        onValueChange = { if (it.length <= 1 && it.all { ch -> ch.isDigit() }) numSeats = it },
+                        label = { Text("Number of Seats") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+                    )
+
                     Button(
                         onClick = { showResults = true },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
                         enabled = pickupLocation.isNotEmpty() && destination.isNotEmpty()
                     ) {
                         Text("Search Rides")
                     }
                 }
             } else {
-                // Results Screen
-                Column(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    // Header
+                Column(modifier = Modifier.fillMaxSize()) {
                     Text(
                         text = "Available Rides",
                         fontSize = 20.sp,
@@ -249,54 +330,40 @@ fun FindRideScreen(
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    if (filteredRides != null) {
-                        if (filteredRides!!.isEmpty()) {
-                            // No rides found
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "No rides found matching your criteria",
-                                    fontSize = 16.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    if (filteredRides != null && filteredRides!!.isNotEmpty()) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth().weight(1f)
+                        ) {
+                            items(filteredRides!!) { ride ->
+                                AvailableRideItem(
+                                    ride = ride,
+                                    onBookClick = {
+                                        val updatedRide = ride.copy(
+                                            passengerId = uid,
+                                            status = "Booked"
+                                        )
+                                        rideViewModel.updateRide(updatedRide)
+                                        navController.navigateUp()
+                                    }
                                 )
                             }
-                        } else {
-                            // List of available rides
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                            ) {
-                                items(filteredRides!!) { ride ->
-                                    AvailableRideItem(
-                                        ride = ride,
-                                        onBookClick = {
-                                            // Book the ride
-                                            val updatedRide = ride.copy(
-                                                passengerId = uid, // Replace with actual user ID
-                                                status = "Booked"
-                                            )
-                                            rideViewModel.updateRide(updatedRide)
-                                            updateRideInFirestore(ride=updatedRide,uid =uid, rideViewModel = rideViewModel)
-                                            syncRidesFromCloud(rideViewModel = rideViewModel1, uid = uid)
-                                            navController.navigateUp()
-                                        }
-                                    )
-                                }
-                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No rides found matching your criteria",
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
 
-                    // Back to Search Button
                     Button(
                         onClick = { showResults = false },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp)
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
                     ) {
                         Text("Back to Search")
                     }
@@ -305,103 +372,3 @@ fun FindRideScreen(
         }
     }
 }
-fun updateRideInFirestore(ride: Ride, rideViewModel: RideViewModel,uid: String) {
-    val db = FirebaseFirestore.getInstance()
-    val rideDTO = ride.toDTO() // Reuse the toDTO() you already have
-
-    db.collection("rides")
-        .document(rideDTO.id)
-        .set(rideDTO) // Replace the entire ride document with updated fields
-        .addOnSuccessListener {
-            syncRidesFromCloud(
-                rideViewModel = rideViewModel,
-                uid = uid
-            )
-//            Log.d("Firestore", "Ride ${rideDTO.id} updated successfully.")
-        }
-        .addOnFailureListener { e ->
-//            Log.e("Firestore", "Error updating ride ${rideDTO.id}", e)
-        }
-}
-
-@Composable
-fun AvailableRideItem(
-    ride: Ride,
-    onBookClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "${ride.pickupLocationName} → ${ride.destinationName}",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-
-                Text(
-                    text = "₹${ride.price}",
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "${ride.date} at ${ride.time}",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Ride Type: ${ride.rideType}",
-                fontSize = 14.sp
-            )
-
-            Text(
-                text = "Payment: ${ride.paymentMethod}",
-                fontSize = 14.sp
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = onBookClick,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Book This Ride")
-            }
-        }
-    }
-}
-fun getAllRidesFromFirestore(onResult: (List<Ride>) -> Unit) {
-    val db = FirebaseFirestore.getInstance()
-
-    db.collection("rides")
-        .get()
-        .addOnSuccessListener { result ->
-            val rideList = result.mapNotNull { document ->
-                document.toObject(RideDTOf::class.java).toEntity() // Convert DTO to Room entity
-            }
-            onResult(rideList) // Return the list via callback
-        }
-        .addOnFailureListener { e ->
-//            Log.e("Firestore", "Error fetching rides", e)
-            onResult(emptyList()) // Return empty list if failure
-        }
-}
-
